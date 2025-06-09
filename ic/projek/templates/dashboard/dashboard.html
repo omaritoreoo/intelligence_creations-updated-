@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css'%}">
+
+<div class="dashboard-content-wrapper">
+    <div class="dashboard-header">
+        <img src="https://cdn-icons-png.flaticon.com/512/2920/2920277.png" alt="Logo Dashboard" style="height: 40px; margin-right: 15px;">
+        <h2 class="dashboard-title">Dashboard</h2>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="dashboard-panel visualization-area">
+            <h3>Visualisasi Grafik Training</h3>
+            <p style="color: #666; margin: 0; position: relative; z-index: 2;">Data training visualization akan ditampilkan di sini dengan chart interaktif.</p>
+        </div>
+        <div class="dashboard-panel comparison-area">
+            <h3>Perbandingan akurasi antar model</h3>
+            <p style="color: #666; margin: 0; position: relative; z-index: 2;">Comparative analysis antar model AI akan ditampilkan dalam bentuk grafik.</p>
+        </div>
+    </div>
+
+    <div class="dashboard-panel">
+        <h3>Daftar Proyek Terbaru</h3>
+        <table class="intelligence-entry">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nama Proyek</th>
+                    <th>Deskripsi</th>
+                    <th>Status</th>
+                    <th>Dibuat Oleh</th>
+                    <th>Tanggal Dibuat</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ project.name }}</td>
+                    <td>{{ project.description|truncatechars:50 }}</td> {# Potong deskripsi jika terlalu panjang #}
+                    <td>
+                        <span class="status-badge status-{{ project.status|lower }}">
+                            {{ project.status }}
+                        </span>
+                    </td>
+                    <td>{{ project.created_by.username|default:"N/A" }}</td>
+                    <td>{{ project.created_at|date:"d M Y" }}</td>
+                    <td class="actions">
+                        <a href="{% url 'projek:view_project' project.id %}" class="btn btn-sm btn-info">View</a>
+                        {# Tambahkan tombol edit atau delete jika diperlukan #}
+                        <a href="{% url 'projek:update_project' project.id %}" class="btn btn-sm btn-warning">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">Belum ada proyek yang dibuat.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'projek:create_project' %}" class="btn btn-success mt-3">Buat Proyek Baru</a>
+        <a href="{% url 'projek:list_projek' %}" class="btn btn-primary mt-3">Lihat Semua Proyek</a>
+
+    </div>
+</div>
+{% endblock %}

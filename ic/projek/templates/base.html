@@ -1,0 +1,140 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="{% static 'css/base.css'%}">
+</head>
+<body id="main-body"> {# Tambahkan ID ini #}
+<div class="sidebar">
+    <div class="sidebar-content">
+        <div class="profile">
+            {% if user.is_authenticated %} {# Pastikan user sudah login #}
+                {# Gunakan request.user.profile untuk mengakses gambar profil #}
+                {% if request.user.profile.profile_picture %}
+                <img src="{{ request.user.profile.profile_picture.url }}" alt="User Icon" class="profile-picture-display">
+                {% else %}
+                <img src="{% static 'images/default_profile.png' %}" alt="User Icon" class="profile-picture-display">
+                {% endif %}
+            {% else %}
+                {# Tampilkan default jika tidak login #}
+                <img src="{% static 'images/default_profile.png' %}" alt="User Icon" class="profile-picture-display">
+            {% endif %}
+
+
+            <div class="name">
+                {% if user.is_authenticated %}
+                {{ user.username }}
+                {% else %}
+                Guest
+                {% endif %}
+            </div>
+            <div class="btn">
+                <a href="{% url 'projek:profile' %}">edit profile</a>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="navigation-area">
+            <a href="{% url 'projek:dashboard' %}">Dashboard</a>
+
+            <a href="#dataEntrySubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Data Entry</a>
+            <div class="collapse" id="dataEntrySubmenu">
+                <a href="{% url 'projek:list_projek' %}">Projek (uji coba)</a>
+                <a href="{% url 'projek:problem_framing_list' %}">Problem Framing</a>
+            </div>
+
+            <a href="#datasetsmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Datasets</a>
+            <div class="collapse" id="datasetsmenu">
+                <a href="{% url 'projek:select_project_for_dataset_request' %}">Request Dataset</a>
+                <a href="{% url 'projek:dataset_request_list' %}">Daftar Datasets</a>
+            </div>
+
+            <a href="#modelTrainingsubMenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Processing</a>
+            <div class="collapse" id="modelTrainingsubMenu">
+                <a href="{% url 'projek:data_processing_list_view' %}">Data Processing</a>
+                <a href="{% url 'projek:model_training_list' %}">Training Model</a>
+            </div>
+
+            <a href="{% url 'projek:documentations' %}">📷 Documentations</a>
+        </div>
+
+        {% if user.is_authenticated %}
+        <div class="logout-area">
+            <form action="{% url 'projek:logout' %}" method="post" style="display: block; padding: 0;">
+                {% csrf_token %}
+                <button type="submit" class="logout-button">
+                    🚪 Keluar
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="content">
+    {% block content %}
+    {% endblock %}
+</div>
+
+<script>
+$(document).ready(function() {
+    // Script untuk menutup submenu lain ketika membuka yang baru
+    $('.dropdown-toggle').on('click', function() {
+        var target = $(this).attr('href');
+        var isExpanded = $(this).attr('aria-expanded') === 'true';
+
+        // Tutup semua submenu lain
+        $('.collapse').not(target).collapse('hide');
+        $('.dropdown-toggle').not(this).attr('aria-expanded', 'false');
+
+        // Toggle submenu yang diklik
+        if (!isExpanded) {
+            $(target).collapse('show');
+            $(this).attr('aria-expanded', 'true');
+        } else {
+            $(target).collapse('hide');
+            $(this).attr('aria-expanded', 'false');
+        }
+
+        return false;
+    });
+
+    // Menutup submenu ketika mengklik di luar sidebar
+    $(document).on('click', function(e) {
+        // Hanya tutup jika sidebar TIDAK dalam keadaan tersembunyi
+        if (!$('body').hasClass('sidebar-collapsed')) {
+            if (!$(e.target).closest('.sidebar').length && !$(e.target).is('#sidebarToggle')) {
+                $('.collapse').collapse('hide');
+                $('.dropdown-toggle').attr('aria-expanded', 'false');
+            }
+        }
+    });
+
+    // FUNGSI BARU: Sidebar toggle functionality
+    $('#sidebarToggle').on('click', function() {
+        $('body').toggleClass('sidebar-collapsed');
+        // Ubah teks tombol berdasarkan status sidebar
+        if ($('body').hasClass('sidebar-collapsed')) {
+            $(this).text('☰'); // Tampilkan hamburger saat tersembunyi
+        } else {
+            $(this).text('✕'); // Tampilkan X saat terbuka
+        }
+    });
+
+    // Atur status awal tombol toggle saat halaman dimuat
+    if ($('body').hasClass('sidebar-collapsed')) {
+        $('#sidebarToggle').text('☰');
+    } else {
+        $('#sidebarToggle').text('✕');
+    }
+});
+</script>
+</body>
+</html>

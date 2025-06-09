@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css'%}">
+
+<div class="dashboard-content-wrapper">
+    <div class="dashboard-header">
+        <h2 class="dashboard-title">{{ page_title }}</h2>
+    </div>
+
+    <div class="dashboard-panel">
+        <h3>Daftar Proyek</h3>
+        <table class="intelligence-entry">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nama Proyek</th>
+                    <th>Supervisor</th>
+                    <th>Tanggal Mulai</th>
+                    <th>Tanggal Selesai</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><a href="{% url 'projek:view_project' project.id %}">{{ project.name }}</a></td>
+                    <td>{{ project.supervisor.username|default:"N/A" }}</td>
+                    <td>{{ project.start_date|date:"d M Y" }}</td>
+                    <td>{{ project.end_date|date:"d M Y" }}</td>
+                    <td>
+                        <span class="status-badge status-{{ project.status|lower }}">
+                            {{ project.status }}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="{% url 'projek:update_project' project.id %}" class="btn btn-sm btn-warning">Edit</a>
+                        {# Tambahkan tombol hapus jika diperlukan #}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">Belum ada proyek yang dibuat.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'projek:create_project' %}" class="btn btn-success mt-3">Buat Proyek Baru</a>
+    </div>
+</div>
+{% endblock %}

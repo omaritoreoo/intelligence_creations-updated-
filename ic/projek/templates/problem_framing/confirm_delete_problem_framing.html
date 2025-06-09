@@ -1,0 +1,16 @@
+{% extends 'base.html' %} {# Assuming you have a base template #}
+
+{% block content %}
+    <div class="container">
+        <h2>{{ page_title }}</h2>
+        <hr>
+        <p>Apakah Anda yakin ingin menghapus Problem Framing untuk proyek {{ project.name }}?</p>
+        <p>Deskripsi Masalah: {{ problem_framing.problem_description|truncatechars:100 }}</p>
+
+        <form method="post" action="{% url 'projek:delete_problem_framing' problem_framing.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+            <a href="{% url 'projek:problem_framing_list' %}" class="btn btn-secondary">Batal</a>
+        </form>
+    </div>
+{% endblock %}

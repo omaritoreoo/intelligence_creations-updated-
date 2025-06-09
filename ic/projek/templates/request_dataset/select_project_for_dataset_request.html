@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css'%}">
+
+<div class="dashboard-content-wrapper">
+    <div class="dashboard-header">
+        <h2 class="dashboard-title">{{ page_title }}</h2>
+    </div>
+
+    <div class="dashboard-panel">
+        <h3>Pilih Proyek untuk Membuat Permintaan Dataset</h3>
+        <table class="intelligence-entry">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nama Proyek</th>
+                    <th>Deskripsi</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ project.name }}</td>
+                    <td>{{ project.description|truncatechars:100 }}</td>
+                    <td>
+                        <span class="status-badge status-{{ project.status|lower }}">
+                            {{ project.status }}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="{% url 'projek:create_dataset_request' project.id %}" class="btn btn-sm btn-primary">Buat Permintaan Dataset</a>
+                    
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">Tidak ada proyek yang tersedia untuk permintaan dataset saat ini.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

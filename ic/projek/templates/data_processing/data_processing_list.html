@@ -1,0 +1,82 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+
+<div class="list-container"> 
+    <div class="dashboard-header">
+        <h2 class="dashboard-title">{{ page_title }}</h2>
+    </div>
+
+    
+
+    <div class="dashboard-panel">
+
+        <h3 class="panel-title">Pemrosessan Data</h3>
+        
+        <a href="{% url 'projek:select_project_for_data_processing_view' %}" class="btn btn-success mt-3">Buat Entri Pemrosesan Baru
+        </a>
+
+        {% if data_processings %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover intelligence-entry"> 
+                <thead>
+                   <tr>
+                    <th>Proyek</th>
+                    <th>Sumber Data</th>
+                    <th>Langkah Pembersihan Data</th>
+                    <th>Langkah Transformasi Data</th>
+                    <th>Rekayasa Fitur</th>
+                    <th>Metrik Kualitas Data</th>
+                    <th>Lokasi Data yang Diproses</th>
+                    <th>Diproses Oleh</th>
+                    <th>Tanggal Dibuat</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dp in data_processings %}
+                    <tr>
+                        <td><a href="{% url 'projek:view_project' dp.project.id %}">{{ dp.project.name }}</a></td>
+                        <td>{{ dp.data_source|truncatechars:70 }}</td>
+                        <td>{{ dp.cleaning_steps|default:"-"|truncatechars:50 }}</td>
+                        <td>{{ dp.transformation_steps|default:"-"|truncatechars:50 }}</td>
+                        <td>{{ dp.feature_engineering|default:"-"|truncatechars:50 }}</td>
+                        <td>{{ dp.data_quality_metrics|default:"-"|truncatechars:50 }}</td>
+                        <td>{{ dp.processed_data_location|default:"-"|truncatechars:50 }}</td>
+                        <td>{{ dp.processed_by.username|default:"N/A" }}</td>
+                        <td>{{ dp.created_at|date:"d M Y, H:i" }}</td>
+                        
+                        <td>
+                            <span class="badge 
+                            {% if dp.status == 'Completed' %}bg-success
+                            {% elif dp.status == 'InProgress' %}bg-warning text-dark
+                            {% elif dp.status == 'Failed' %}bg-danger
+                            {% else %}bg-secondary
+                            {% endif %}">
+                            {{ dp.get_status_display }}
+                        </span>
+                    </td>
+
+                    <td class="actions text-center">
+                            <a href="{% url 'projek:edit_data_processing_view' dp.id %}" class="btn btn-sm btn-info">Edit</a>
+                            <a href="{% url 'projek:delete_processing_data' dp.id %}" class="btn btn-sm btn-danger">Hapus</a>
+                            <a href="{% url 'projek:view_data_processing_view' dp.id %}" class="btn btn-sm btn-secondary">View</a> 
+                        </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info" role="alert">
+            <i class="fas fa-info-circle"></i> Belum ada entri Problem Framing. Klik tombol "Problem Framing Baru" untuk memulai.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

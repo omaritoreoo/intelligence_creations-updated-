@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+    <style>
+        /* Gaya dasar untuk kontainer form */
+        .edit-profile-form-container {
+            background: rgba(255, 255, 255, 0.95); /* Latar belakang semi-transparan */
+            backdrop-filter: blur(10px); /* Efek blur untuk latar belakang */
+            border-radius: 20px; /* Sudut membulat */
+            padding: 30px; /* Ruang di dalam kontainer */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Bayangan lembut */
+            margin-top: 30px; /* Jarak dari atas */
+            max-width: 700px; /* Batasi lebar maksimal agar tidak terlalu lebar */
+            margin-left: auto; /* Pusatkan kontainer */
+            margin-right: auto; /* Pusatkan kontainer */
+            animation: fadeIn 0.8s ease-out; /* Animasi saat muncul */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .edit-profile-form-container h3 {
+            color: #333; /* Warna teks judul */
+            margin-bottom: 25px; /* Jarak bawah judul */
+            font-size: 1.6em; /* Ukuran font judul */
+            text-align: center; /* Pusatkan judul */
+            font-weight: 600; /* Tebal font */
+        }
+
+        /* Gaya untuk label form (Crispy Forms biasanya mengaturnya, tapi ini untuk override) */
+        .form-group label {
+            font-weight: 600; /* Label lebih tebal */
+            color: #555; /* Warna label */
+            margin-bottom: 8px; /* Jarak bawah label */
+            display: block; /* Memastikan label berada di atas input */
+        }
+
+        /* Gaya untuk input teks dan textarea */
+        .form-control, textarea.form-control {
+            border-radius: 8px; /* Sudut membulat untuk input */
+            border: 1px solid #ced4da; /* Border standar */
+            padding: 10px 15px; /* Padding di dalam input */
+            font-size: 1em; /* Ukuran font input */
+            transition: all 0.3s ease; /* Transisi halus saat fokus */
+            width: 100%; /* Lebar penuh */
+            box-sizing: border-box; /* Padding tidak menambah lebar */
+        }
+
+        /* Gaya khusus untuk input file */
+        .form-control-file {
+            display: block; /* Agar menempati baris baru */
+            padding: 10px 0; /* Padding vertikal */
+            border: none; /* Hapus border default */
+            background-color: transparent; /* Latar belakang transparan */
+        }
+        /* Style the actual file input button */
+        .form-control-file::-webkit-file-upload-button {
+            background-color: #f0f0f0; /* Gaya tombol upload */
+            color: #555;
+            border: 1px solid #ccc;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .form-control-file::-webkit-file-upload-button:hover {
+            background-color: #e0e0e0;
+        }
+
+
+        /* Gaya saat input dalam keadaan fokus (diklik/diisi) */
+        .form-control:focus, .form-control-file:focus-within { /* focus-within untuk input file */
+            border-color: #d88aba; /* Warna border saat fokus */
+            box-shadow: 0 0 0 0.2rem rgba(216, 138, 186, 0.25); /* Efek bayangan saat fokus */
+        }
+
+        /* Gaya untuk tombol */
+        .btn-primary, .btn-success {
+            background-color: #d88aba; /* Warna utama Anda (sesuai tema) */
+            border-color: #d88aba; /* Border warna utama */
+            padding: 10px 20px; /* Padding tombol */
+            font-size: 1.1em; /* Ukuran font tombol */
+            border-radius: 30px; /* Sudut membulat ekstrem */
+            transition: all 0.3s ease; /* Transisi halus */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Bayangan tombol */
+            width: 100%; /* Lebar penuh */
+            display: block; /* Agar menempati baris sendiri */
+            margin-top: 20px; /* Jarak dari elemen atas */
+        }
+
+        .btn-primary:hover, .btn-success:hover {
+            background-color: #c06fa2; /* Warna hover */
+            border-color: #c06fa2; /* Border hover */
+            transform: translateY(-2px); /* Efek melayang saat hover */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); /* Bayangan lebih dalam saat hover */
+            color: white; /* Pastikan teks putih saat hover */
+            text-decoration: none; /* Hapus garis bawah */
+        }
+
+        /* Garis pemisah antar form */
+        hr.my-4 {
+            border-top: 1px solid #eee; /* Garis tipis */
+            margin: 35px 0; /* Jarak atas dan bawah */
+        }
+
+        /* Gaya untuk tampilan foto profil saat ini */
+        .current-profile-pic {
+            text-align: center; /* Pusatkan gambar */
+            margin-bottom: 20px; /* Jarak bawah */
+        }
+
+        .current-profile-pic img {
+            max-width: 120px; /* Lebar maksimal gambar */
+            height: 120px; /* Tinggi gambar */
+            border-radius: 50%; /* Bulat */
+            object-fit: cover; /* Pastikan gambar mengisi lingkaran */
+            border: 3px solid #eee; /* Border putih tipis */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Bayangan gambar */
+        }
+
+        .current-profile-pic p {
+            font-size: 0.9em; /* Ukuran font teks di bawah gambar */
+            color: #888; /* Warna teks */
+            margin-top: 10px; /* Jarak atas teks */
+        }
+
+        /* Responsive design untuk layar kecil */
+        @media (max-width: 768px) {
+            .edit-profile-form-container {
+                padding: 20px;
+                margin-top: 20px;
+            }
+            .edit-profile-form-container h3 {
+                font-size: 1.4em;
+                margin-bottom: 20px;
+            }
+            .btn-primary, .btn-success {
+                padding: 10px 15px;
+                font-size: 1em;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-content-wrapper">
+    <div class="dashboard-header">
+        <h2 class="dashboard-title">{{ page_title }}</h2>
+    </div>
+
+    <div class="edit-profile-form-container">
+        <h3>Edit Informasi Akun</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                {{ u_form|crispy }}
+            </fieldset>
+            {# Tambahkan atribut 'name' pada tombol submit #}
+            <button type="submit" class="btn btn-primary" name="submit_account">Perbarui Akun</button>
+        </form>
+
+        <hr class="my-4">
+
+        <h3>Edit Detail Profil</h3>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <div class="current-profile-pic">
+                    {% if user_obj.profile.profile_picture %}
+                        <img src="{{ user_obj.profile.profile_picture.url }}" alt="Foto Profil Saat Ini">
+                        <p>Foto Profil Saat Ini</p>
+                    {% else %}
+                        <img src="{% static 'images/default_profile.png' %}" alt="Default Foto Profil">
+                        <p>Belum ada Foto Profil</p>
+                    {% endif %}
+                </div>
+                {{ p_form|crispy }}
+            </fieldset>
+            {# Tambahkan atribut 'name' pada tombol submit #}
+            <button type="submit" class="btn btn-success" name="submit_profile">Perbarui Profil</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

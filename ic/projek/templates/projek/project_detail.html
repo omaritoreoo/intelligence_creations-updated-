@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="">
+
+<div class="dashboard-content-wrapper">
+    <div class="dashboard-header">
+        <h2 class="dashboard-title">{{ page_title }}</h2>
+    </div>
+
+    <div class="dashboard-panel">
+        <h3>Informasi Proyek</h3>
+        <p><strong>Nama Proyek:</strong> {{ project.name }}</p>
+        <p><strong>Deskripsi:</strong> {{ project.description|linebreaksbr }}</p> {# linebreaksbr untuk mempertahankan baris baru #}
+        <p><strong>Lokasi:</strong> {{ project.location }}</p>
+        <p><strong>Tanggal Mulai:</strong> {{ project.start_date|date:"d M Y" }}</p>
+        <p><strong>Tanggal Selesai:</strong> {{ project.end_date|date:"d M Y" }}</p>
+        <p><strong>Supervisor:</strong> {{ project.supervisor.username|default:"Tidak Ditentukan" }}</p>
+        <p><strong>Status:</strong> <span class="status-badge status-{{ project.status|lower }}">{{ project.status }}</span></p>
+        <p><strong>Dibuat pada:</strong> {{ project.created_at|date:"d M Y H:i" }}</p>
+        <p><strong>Terakhir Diperbarui:</strong> {{ project.updated_at|date:"d M Y H:i" }}</p>
+
+        <hr>
+
+        <h4>Tindakan</h4>
+        <div class="button-group">
+            <a href="{% url 'projek:update_project' project.id %}" class="btn btn-warning">Edit Proyek</a>
+            <a href="{% url 'projek:list_projek' %}" class="btn btn-secondary">Kembali ke Daftar Proyek</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

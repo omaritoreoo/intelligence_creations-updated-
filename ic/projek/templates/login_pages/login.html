@@ -1,0 +1,161 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligence Creations - Login</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-section">
+                <h1>intelligence creations</h1>
+                <p>Welcome! Please login to your account.</p>
+            </div>
+            <div class="login-badge">login page</div>
+        </div>
+
+        <div class="login-form-container">
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- Global form errors -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Username/Email field -->
+                <div class="form-group">
+                    <input 
+                        type="text" 
+                        name="{{ form.username.name }}" 
+                        id="{{ form.username.id_for_label }}" 
+                        placeholder="Username atau Email" 
+                        required>
+                    {% if form.username.errors %}
+                        <small class="text-danger">{{ form.username.errors }}</small>
+                    {% endif %}
+                </div>
+
+                <!-- Password field -->
+                <div class="form-group password-group">
+                    <input 
+                        type="password" 
+                        name="{{ form.password.name }}" 
+                        id="{{ form.password.id_for_label }}" 
+                        placeholder="Password" 
+                        required>
+                    <span class="password-toggle" onclick="togglePasswordVisibility()">👁</span>
+                    {% if form.password.errors %}
+                        <small class="text-danger">{{ form.password.errors }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        {% if form.remember_me %}
+                            <input 
+                                type="checkbox" 
+                                name="{{ form.remember_me.name }}" 
+                                id="{{ form.remember_me.id_for_label }}">
+                        {% else %}
+                            <input type="checkbox" name="remember_me_placeholder">
+                        {% endif %}
+                        Remember Me
+                    </label>
+                    <a href="#" class="forgot-password">Forgot Password?</a>
+                </div>
+
+                <!-- Django messages -->
+                {% if messages %}
+                    <ul class="error-messages">
+                        {% for message in messages %}
+                            <li class="alert alert-{{ message.tags }}">{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-login">Login</button>
+                    <a href="{% url 'projek:register' %}" class="btn btn-signup">Sign Up</a>
+                </div>
+
+                <div class="social-login">
+                    <p>Or login with</p>
+                    <div class="social-buttons">
+                        <a href="#" class="social-btn">Facebook</a>
+                        <a href="#" class="social-btn">LinkedIn</a>
+                        <a href="#" class="social-btn">Google</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="mascot">
+        <div class="mascot-container">
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUwIiBoZWlnaHQ9IjM1MCIgdmlld0JveD0iMCAwIDM1MCAzNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPCEtLSBNYWluIGJvZHkgLS0+CiAgPGVsbGlwc2UgY3g9IjE3NSIgY3k9IjIzMCIgcng9IjEyMCIgcnk9IjEwMCIgZmlsbD0iI0VCNjVCRiIvPgogIDxlbGxpcHNlIGN4PSIxNzUiIGN5PSIyMzAiIHJ4PSIxMDAiIHJ5PSI4NSIgZmlsbD0iI0VCNjVCRiIgZmlsbC1vcGFjaXR5PSIwLjciLz4KICA8IS0tIEVhcnMgLS0+CiAgPGVsbGlwc2UgY3g9IjE0MCIgY3k9IjEyMCIgcng9IjM1IiByeT0iNTAiIGZpbGw9IiNFQjY1QkYiLz4KICA8ZWxsaXBzZSBjeD0iMjEwIiBjeT0iMTIwIiByeD0iMzUiIHJ5PSI1MCIgZmlsbD0iI0VCNjVCRiIvPgogIDxlbGxpcHNlIGN4PSIxNDAiIGN5PSIxMjAiIHJ4PSIyMCIgcnk9IjMwIiBmaWxsPSIjQzQ2M0E0Ii8+CiAgPGVsbGlwc2UgY3g9IjIxMCIgY3k9IjEyMCIgcng9IjIwIiByeT0iMzAiIGZpbGw9IiNDNDYzQTQiLz4KICA8IS0tIE1vdXRoIC0tPgogIDxwYXRoIGQ9Ik0xNDAgMjMwIEMxNDAgMjMwIDE3NSAyNTAgMjEwIDIzMCIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSI0IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8IS0tIFRlZXRoIC0tPgogIDxlbGxpcHNlIGN4PSIxNjAiIGN5PSIyNDAiIHJ4PSI2IiByeT0iOCIgZmlsbD0id2hpdGUiLz4KICA8ZWxsaXBzZSBjeD0iMTkwIiBjOT0iMjQwIiByeD0iNiIgcnk9IjgiIGZpbGw9IndoaXRlIi8+CiAgPCEtLSBBcm1zIC0tPgogIDxlbGxpcHNlIGN4PSI4NSIgY3k9IjI2MCIgcng9IjI1IiByeT0iNDAiIGZpbGw9IiNFQjY1QkYiIHRyYW5zZm9ybT0icm90YXRlKC0zMCA4NSAyNjApIi8+CiAgPGVsbGlwc2UgY3g9IjI2NSIgY3k9IjI2MCIgcng9IjI1IiByeT0iNDAiIGZpbGw9IiNFQjY1QkYiIHRyYW5zZm9ybT0icm90YXRlKDMwIDI2NSAyNjApIi8+CiAgPCEtLSBIYW5kcyAtLT4KICA8Y2lyY2xlIGN4PSI2NSIgY3k9IjI5NSIgcj0iMTUiIGZpbGw9IiNFQjY1QkYiLz4KICA8Y2lyY2xlIGN4PSIyODUiIGN5PSIyOTUiIHI9IjE1IiBmaWxsPSIjRUI2NUJGIi8+CiAgPCEtLSBGaW5nZXJzIC0tPgogIDxlbGxpcHNlIGN4PSI1NSIgY3k9IjI4NSIgcng9IjQiIHJ5PSI4IiBmaWxsPSIjRUI2NUJGIi8+CiAgPGVsbGlwc2UgY3g9IjQ4IiBjeT0iMjk1IiByeD0iNCIgcnk9IjgiIGZpbGw9IiNFQjY1QkYiLz4KICA8ZWxsaXBzZSBjeD0iNTUiIGN5PSIzMDUiIHJ4PSI0IiByeT0iOCIgZmlsbD0iI0VCNjVCRiIvPgogIDxlbGxpc2UgY3g9IjI5NSIgY3k9IjI4NSIgcng9IjQiIHJ5PSI4IiBmaWxsPSIjRUI2NUJGIi8+CiAgPGVsbGlwc2UgY3g9IjMwMiIgY3k9IjI5NSIgcng9IjQiIHJ5PSI4IiBmaWxsPSIjRUI2NUJGIi8+CiAgPGVsbGlwc2UgY3g9IjI5NSIgY3k9IjMwNSIgcng9IjQiIHJ5PSI4IiBmaWxsPSIjRUI2NUJGIi8+CiAgPCEtLSBCZWxseSBzcG90cyAtLT4KICA8Y2lyY2xlIGN4PSIxNjAiIGN5PSIyNzAiIHI9IjE4IiBmaWxsPSIjQzQ2M0E0IiBmaWxsLW9wYWNpdHk9IjAuNSIvPgoKICA8Y2lyY2xlIGN4PSIyMDAiIGN5PSIyODAiIHI9IjEyIiBmaWxsPSIjQzQ2M0E0IiBmaWxsLW9wYWNpdHk9IjAuNSIvPgo8L3N2Zz4=" alt="Mascot Character">
+            <div class="interactive-eyes">
+                <div class="interactive-eye">
+                    <div class="interactive-pupil">
+                        <div class="pupil-highlight"></div>
+                    </div>
+                </div>
+                <div class="interactive-eye">
+                    <div class="interactive-pupil">
+                        <div class="pupil-highlight"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePasswordVisibility() {
+            const passwordField = document.getElementById('{{ form.password.id_for_label }}');
+            const toggle = document.querySelector('.password-toggle');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggle.textContent = '🙈';
+            } else {
+                passwordField.type = 'password';
+                toggle.textContent = '👁';
+            }
+        }
+
+        // Interactive eyes that follow cursor
+        document.addEventListener('mousemove', function(e) {
+            const pupils = document.querySelectorAll('.interactive-pupil');
+            const mascot = document.querySelector('.mascot');
+
+            if (mascot && pupils.length > 0) {
+                const mascotRect = mascot.getBoundingClientRect();
+
+                pupils.forEach(pupil => {
+                    const eyeRect = pupil.parentElement.getBoundingClientRect();
+                    const eyeCenterX = eyeRect.left + eyeRect.width / 2;
+                    const eyeCenterY = eyeRect.top + eyeRect.height / 2;
+
+                    const angle = Math.atan2(e.clientY - eyeCenterY, e.clientX - eyeCenterX);
+                    const maxDistance = Math.min(eyeRect.width / 4, eyeRect.height / 4, 15);
+                    const currentDistance = Math.hypot(e.clientX - eyeCenterX, e.clientY - eyeCenterY) / 25;
+                    const finalDistance = Math.min(maxDistance, currentDistance);
+
+                    const offsetX = Math.cos(angle) * finalDistance;
+                    const offsetY = Math.sin(angle) * finalDistance;
+
+                    pupil.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+                });
+            }
+        });
+    </script>
+</body>
+</html>

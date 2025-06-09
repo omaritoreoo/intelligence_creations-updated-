@@ -1,0 +1,15 @@
+{% extends 'base.html' %} 
+
+{% block content %}
+    <div class="container">
+        <h2>{{ page_title }}</h2>
+        <hr>
+        <p>Apakah Anda yakin ingin menghapus Request Dataset untuk proyek {{ project.name }}?</p>
+
+        <form method="post" action="{% url 'projek:delete_request_dataset' dataset_request.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+            <a href="{% url 'projek:dataset_request_list' %}" class="btn btn-secondary">Batal</a>
+        </form>
+    </div>
+{% endblock %}

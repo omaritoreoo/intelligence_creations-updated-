@@ -1,0 +1,191 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligence Creations - Register</title>
+    <link rel="stylesheet" href="{% static 'css/register.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-section">
+                <h1>intelligence creations</h1>
+                <p>Create your account to get started.</p>
+            </div>
+            <div class="register-badge">register page</div>
+        </div>
+        
+        <div class="register-form-container">
+            <form method="post" action="{% url 'projek:register' %}">
+                {% csrf_token %}
+                
+                {# --- Global Form Errors (non-field errors) --- #}
+                {% if form.non_field_errors %}
+                    <div class="global-errors">
+                        <strong>Terjadi kesalahan:</strong>
+                        <ul>
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                {# --- Username Field --- #}
+                <div class="form-group">
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <small class="error-message">
+                            {% for error in form.username.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </small>
+                    {% endif %}
+                </div>
+                
+                {# --- Email Field --- #}
+                {% if form.email %}
+                <div class="form-group">
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <small class="error-message">
+                            {% for error in form.email.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </small>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {# --- Password Field (password1) --- #}
+                <div class="form-group password-group">
+                    {{ form.password1 }}
+                    <span class="password-toggle" onclick="togglePassword('id_password1', this)">👁</span>
+                    {% if form.password1.errors %}
+                        <small class="error-message">
+                            {% for error in form.password1.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </small>
+                    {% endif %}
+                </div>
+                
+                {# --- Confirm Password Field (password2) --- #}
+                <div class="form-group password-group">
+                    {{ form.password2 }}
+                    <span class="password-toggle" onclick="togglePassword('id_password2', this)">👁</span>
+                    {% if form.password2.errors %}
+                        <small class="error-message">
+                            {% for error in form.password2.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </small>
+                    {% endif %}
+                </div>
+                
+                <div class="terms-checkbox">
+                    <input type="checkbox" id="terms" name="terms" required>
+                    <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+                </div>
+                
+                <div class="button-group">
+                    <button type="submit" class="btn btn-register">Create Account</button>
+                    <a href="{% url 'projek:login' %}" class="btn btn-login">Login</a>
+                </div>
+
+                {# --- Django messages --- #}
+                {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                            <li class="{{ message.tags }}">{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    
+    <div class="mascot">
+        <div class="mascot-container">
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUwIiBoZWlnaHQ9IjM1MCIgdmlld0JveD0iMCA0NSAzNTAgMzUwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDwhLS0gTWFpbiBib2R5IC0tPgogIDxlbGxpcHNlIGN4PSIxNzUiIGN5PSIyMzAiIHJ4PSIxMjAiIHJ5PSIxMDAiIGZpbGw9IiNFQjY1QkYiLz4KICA8ZWxsaXBzZSBjeD0iMTc1IiBjeT0iMjMwIiByeD0iMTAwIiByeT0iODUiIGZpbGw9IiNFQjY1QkYiIGZpbGwtb3BhY2l0eT0iMC43Ii8+CiAgPCEtLSBFYXJzIC0tPgogIDxlbGxpcHNlIGN4PSIxNDAiIGN5PSIxMjAiIHJ4PSIzNSIgcnk9IjUwIiBmaWxsPSIjRUI2NUJGIi8+CiAgPGVsbGlwc2UgY3g9IjIxMCIgY3k9IjEyMCIgcng9IjM1IiByeT0iNTAiIGZpbGw9IiNFQjY1QkYiLz4KICA8ZWxsaXBzZSBjeD0iMTQwIiBjeT0iMTIwIiByeD0iMjAiIHJ5PSIzMCIgZmlsbD0iI0M0NjNBNCIvPgogIDxlbGxpcHNlIGN4PSIyMTAiIGN5PSIxMjAiIHJ4PSIyMCIgcnk9IjMwIiBmaWxsPSIjQzQ2M0E0Ii8+CiAgPCEtLSBNb3V0aCAtLT4KICA8cGF0aCBkPSJNMTQwIDIzMCBDMTQwIDIzMCAxNzUgMjUwIDIxMCAyMzAiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iNCIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPCEtLSBUZWV0aCAtLT4KICA8ZWxsaXBzZSBjeD0iMTYwIiBjeT0iMjQwIiByeD0iNiIgcnk9IjgiIGZpbGw9IndoaXRlIi8+CiAgPGVsbGlwc2UgY3g9IjE5MCIgY3k9IjI0MCIgcng9IjYiIHJ5PSI4IiBmaWxsPSJ3aGl0ZSIvPgogIDwhLS0gQXJtcyAtLT4KICA8ZWxsaXBzZSBjeD0iODUiIGN5PSIyNjAiIHJ4PSIyNSIgcnk9IjQwIiBmaWxsPSIjRUI2NUJGIiB0cmFuc2Zvcm09InJvdGF0ZSgtMzAgODUgMjYwKSIvPgogIDxlbGxpcHNlIGN4PSIyNjUiIGN5PSIyNjAiIHJ4PSIyNSIgcnk9IjQwIiBmaWxsPSIjRUI2NUJGIiB0cmFuc2Zvcm09InJvdGF0ZSgzMCAyNjUgMjYwKSIvPgogIDwhLS0gSGFuZHMgLS0+CiAgPGNpcmNsZSBjeD0iNjUiIGN5PSIyOTUiIHI9IjE1IiBmaWxsPSIjRUI2NUJGIi8+CiAgPGNpcmNsZSBjeD0iMjg1IiBjeT0iMjk1IiByPSIxNSIgZmlsbD0iI0VCNjVCRiIvPgogIDwhLS0gRmluZ2VycyAtLT4KICA8ZWxsaXBzZSBjeD0iNTUiIGN5PSIyODUiIHJ4PSI0IiByeT0iOCIgZmlsbD0iI0VCNjVCRiIvPgogIDxlbGxpcHNlIGN4PSI0OCIgY3k9IjI5NSIgcng9IjQiIHJ5PSI4IiBmaWxsPSIjRUI2NUJGIi8+CiAgPGVsbGlwc2UgY3g9IjU1IiBjeT0iMzA1IiByeD0iNCIgcnk9IjgiIGZpbGw9IiNFQjY1QkYiLz4KICA8ZWxsaXBzZSBjeD0iMjk1IiBjeT0iMjg1IiByeD0iNCIgcnk9IjgiIGZpbGw9IiNFQjY1QkYiLz4KICA8ZWxsaXBzZSBjeD0iMzAyIiBjeT0iMjk1IiByeD0iNCIgcnk9IjgiIGZpbGw9IiNFQjY1QkYiLz4KICA8ZWxsaXBzZSBjeD0iMjk1IiBjeT0iMzA1IiByeD0iNCIgcnk9IjgiIGZpbGw9IiNFQjY1QkYiLz4KICA8IS0tIEJlbGx5IHNwb3RzIC0tPgogIDxjaXJjbGUgY3g9IjE2MCIgY3k9IjI3MCIgcj0iMTgiIGZpbGw9IiNDNDYzQTQiIGZpbGwtb3BhY2l0eT0iMC41Ii8+CiAgPGNpcmNsZSBjeD0iMjAwIiBjeT0iMjgwIiByPSIxMiIgZmlsbD0iI0M0NjNBNCIgZmlsbC1vcGFjaXR5PSIwLjUiLz4KPC9zdmc+" alt="Mascot Character">
+            <div class="interactive-eyes">
+                <div class="interactive-eye">
+                    <div class="interactive-pupil">
+                        <div class="pupil-highlight"></div>
+                    </div>
+                </div>
+                <div class="interactive-eye">
+                    <div class="interactive-pupil">
+                        <div class="pupil-highlight"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function togglePassword(fieldId, toggle) {
+            const passwordField = document.getElementById(fieldId);
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggle.textContent = '🙈';
+            } else {
+                passwordField.type = 'password';
+                toggle.textContent = '👁';
+            }
+        }
+        
+        // Interactive eyes that follow cursor
+        document.addEventListener('mousemove', function(e) {
+            const pupils = document.querySelectorAll('.interactive-pupil');
+            const mascot = document.querySelector('.mascot');
+            
+            if (mascot && pupils.length > 0) {
+                pupils.forEach(pupil => {
+                    const eyeRect = pupil.parentElement.getBoundingClientRect();
+                    const eyeCenterX = eyeRect.left + eyeRect.width / 2;
+                    const eyeCenterY = eyeRect.top + eyeRect.height / 2;
+                    
+                    const angle = Math.atan2(e.clientY - eyeCenterY, e.clientX - eyeCenterX);
+                    const maxDistance = Math.min(eyeRect.width / 4, eyeRect.height / 4); 
+                    const currentDistance = Math.hypot(e.clientX - eyeCenterX, e.clientY - eyeCenterY) / 25; 
+                    const finalDistance = Math.min(maxDistance, currentDistance);
+
+                    const offsetX = Math.cos(angle) * finalDistance;
+                    const offsetY = Math.sin(angle) * finalDistance;
+                    
+                    pupil.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+                });
+            }
+        });
+        
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const password1Field = document.getElementById('id_password1');
+            const password2Field = document.getElementById('id_password2');
+            
+            const password1 = password1Field ? password1Field.value : '';
+            const password2 = password2Field ? password2Field.value : '';
+
+            const termsChecked = document.getElementById('terms').checked;
+            
+            // Check password match
+            if (password1 !== password2) {
+                e.preventDefault();
+                alert('Password tidak cocok! Mohon ketik ulang password Anda.');
+                return;
+            }
+            
+            // Check terms acceptance
+            if (!termsChecked) {
+                e.preventDefault();
+                alert('Anda harus menyetujui Ketentuan Layanan dan Kebijakan Privasi.');
+                return;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{% extends 'base.html' %} {# Assuming you have a base template #}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+    <div class="list-container"> 
+        <div class="dashboard-header">
+            <h2 class="dashboard-title">{{ page_title }}</h2>
+        </div>
+
+        <div class="dashboard-panel">
+            <h3 class="panel-title">Konfirmasi Penghapusan</h3>
+            <p>
+                Apakah Anda yakin ingin menghapus Data Processing ini: 
+                <strong>"{{ data_processing.model_name }}"</strong> 
+                untuk proyek: 
+                <strong>"{{ data_processing.project.name }}"</strong>?
+            </p>
+            <p class="text-danger">Tindakan ini tidak dapat dibatalkan.</p>
+
+            <form method="post" action="{% url 'projek:delete_processing_data' data_processing.id %}" class="mt-4">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger me-2">
+                    <i class="fas fa-trash-alt"></i> Ya, Hapus Permanen
+                </button>
+                <a href="{% url 'projek:data_processing_list_view' %}" class="btn btn-secondary">
+                    <i class="fas fa-times-circle"></i> Batal
+                </a>
+            </form>
+        </div>
+    </div>
+{% endblock %}

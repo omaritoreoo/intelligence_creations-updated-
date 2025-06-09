@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/request_dataset_list.css' %}">
+
+<div class="list-container">
+    
+    <div class="dashboard-header">
+        <h2 class="dashboard-title">{{ page_title }}</h2>
+        <a href="{% url 'projek:select_project_for_dataset_request' %}" class="create-button">
+            <i class="fas fa-plus-circle create-icon"></i>
+            Buat Permintaan Baru
+        </a>
+    </div>
+
+    <div class="dashboard-panel">
+        <h3 class="panel-title">Daftar Permintaan Dataset</h3>
+
+        {% if dataset_requests %} {# <--- This is the 'if' block that needs an 'else' or 'endif' #}
+        <div class="table-responsive">
+            <table class="intelligence-entry">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Proyek</th>
+                        <th>Kebutuhan Dataset</th>
+                        <th>Tipe Data</th>
+                        <th>Format</th>
+                        <th>Tanggal Dibutuhkan</th>
+                        <th class="text-center">Status</th>
+                        <th>Diminta Oleh</th>
+                        <th class="text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in dataset_requests %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ req.project.name }}</td>
+                        <td>{{ req.description_problem|truncatechars:70 }}</td>
+                        <td>{{ req.type_data_needed }}</td>
+                        <td>{{ req.file_format }}</td>
+                        <td>{{ req.start_date_needed|date:"d M Y" }}</td>
+                        <td class="text-center">
+                            <span class="status-badge status-{{ req.status|lower|cut:' ' }}">
+                                {{ req.status }}
+                            </span>
+                        </td>
+                        <td>{{ req.requested_by.username|default:"N/A" }}</td>
+                        <td class="actions text-center">
+                            <a href="{% url 'projek:delete_request_dataset' req.id %}" class="btn btn-sm btn-danger">Hapus</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div> {# End of .table-responsive #}
+        {% else %} {# <--- This is the missing 'else' for the 'if dataset_requests' block #}
+        <div class="alert alert-info" role="alert">
+            <i class="fas fa-info-circle"></i> Belum ada permintaan dataset yang diajukan. Klik tombol "Buat Permintaan Baru" untuk memulai.
+        </div>
+        {% endif %} {# <--- Now correctly closing the 'if dataset_requests' block #}
+    </div>
+</div>
+{% endblock %}

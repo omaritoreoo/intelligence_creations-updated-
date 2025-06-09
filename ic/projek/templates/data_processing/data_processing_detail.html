@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h1 class="card-title mb-0">{{ page_title }}</h1>
+            <div>
+                <a href="{% url 'projek:edit_data_processing_view' data_processing.pk %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{% url 'projek:data_processing_list_view' %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-list"></i> Kembali ke Daftar
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Proyek Terkait:</dt>
+                <dd class="col-sm-9"><a href="{% url 'projek:view_project' data_processing.project.id %}">{{ data_processing.project.name }}</a></dd>
+
+                <dt class="col-sm-3">Deskripsi Pemrosesan:</dt>
+                <dd class="col-sm-9">{{ data_processing.processing_description|linebreaksbr }}</dd>
+
+                <dt class="col-sm-3">Metode/Teknik:</dt>
+                <dd class="col-sm-9">{{ data_processing.methods_used|default:"-"|linebreaksbr }}</dd>
+
+                <dt class="col-sm-3">Informasi Output Data:</dt>
+                <dd class="col-sm-9">{{ data_processing.processed_output_info|default:"-"|linebreaksbr }}</dd>
+
+                <dt class="col-sm-3">Script Pemrosesan:</dt>
+                <dd class="col-sm-9">
+                    {% if data_processing.processing_script %}
+                        <a href="{{ data_processing.processing_script.url }}" target="_blank">Unduh Script</a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </dd>
+
+                <dt class="col-sm-3">Status:</dt>
+                <dd class="col-sm-9">
+                    <span class="badge 
+                        {% if data_processing.status == 'Completed' %}bg-success
+                        {% elif data_processing.status == 'InProgress' %}bg-warning text-dark
+                        {% elif data_processing.status == 'Failed' %}bg-danger
+                        {% else %}bg-secondary
+                        {% endif %}">
+                        {{ data_processing.get_status_display }}
+                    </span>
+                </dd>
+
+                <dt class="col-sm-3">Diproses Oleh:</dt>
+                <dd class="col-sm-9">{{ data_processing.processed_by.username|default:"N/A" }}</dd>
+
+                <dt class="col-sm-3">Tanggal Dibuat:</dt>
+                <dd class="col-sm-9">{{ data_processing.created_at|date:"d M Y, H:i" }}</dd>
+
+                <dt class="col-sm-3">Terakhir Diperbarui:</dt>
+                <dd class="col-sm-9">{{ data_processing.updated_at|date:"d M Y, H:i" }}</dd>
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css'%}">
+
+
+<div class="dashboard-content-wrapper">
+    <div class="dashboard-header">
+        <h2 class="dashboard-title">{{ page_title }}</h2>
+    </div>
+
+    <div class="dashboard-panel">
+        <h3>Detail Proyek: {{ project.name }}</h3>
+        <p><strong>Deskripsi:</strong> {{ project.description|linebreaksbr }}</p>
+        <p><strong>Lokasi:</strong> {{ project.location }}</p>
+        <p><strong>Tanggal:</strong> {{ project.start_date|date:"d M Y" }} hingga {{ project.end_date|date:"d M Y" }}</p>
+        <hr>
+
+        <h3>Formulir Model Training</h3>
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {{ form|crispy }}
+
+            <div class="button-group" style="margin-top: 20px;">
+                <button type="submit" class="btn btn-primary">Simpan Problem Framing</button>
+                <a href="{% url 'projek:problem_framing_list' %}" class="btn btn-secondary">Batal</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

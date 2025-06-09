@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+    <style>
+        /* Gaya khusus untuk halaman profil */
+        .profile-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .profile-picture-display {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid #d88aba; /* Warna border sesuai tema */
+            margin: 0 auto 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .profile-picture-display:hover {
+            transform: scale(1.05);
+        }
+
+        .profile-info h4 {
+            color: #333;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .profile-info p {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .profile-info p strong {
+            color: #444;
+            margin-right: 5px;
+        }
+
+        .profile-bio, .profile-til { /* Menambahkan gaya untuk til */
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .profile-bio h5, .profile-til h5 {
+            color: #555;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+
+        .profile-bio p, .profile-til p {
+            color: #777;
+            line-height: 1.6;
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .edit-profile-btn {
+            background-color: #d88aba;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 1.1em;
+            margin-top: 30px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 5px 15px rgba(216, 138, 186, 0.4);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .edit-profile-btn:hover {
+            background-color: #c06fa2;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(216, 138, 186, 0.6);
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-content-wrapper">
+    <div class="dashboard-header">
+        <h2 class="dashboard-title">{{ page_title }}</h2>
+    </div>
+
+    <div class="profile-card">
+        {% if profile_obj.profile_picture %}
+            <img src="{{ profile_obj.profile_picture.url }}" alt="Foto Profil" class="profile-picture-display">
+        {% else %}
+            <img src="{% static 'images/default_profile.png' %}" alt="Default Foto Profil" class="profile-picture-display">
+        {% endif %}
+
+        <div class="profile-info">
+            <h4>{{ user_obj.first_name }} {{ user_obj.last_name }} ({{ user_obj.username }})</h4>
+            <p><strong>Email:</strong> {{ user_obj.email }}</p>
+            <p><strong>Bergabung Sejak:</strong> {{ user_obj.date_joined|date:"d F Y" }}</p>
+            <p><strong>Terakhir Login:</strong> {{ user_obj.last_login|date:"d F Y H:i" }}</p>
+        </div>
+
+        {% if profile_obj.bio %}
+            <div class="profile-bio">
+                <h5>Biografi</h5>
+                <p>{{ profile_obj.bio }}</p>
+            </div>
+        {% endif %}
+
+        {% if profile_obj.til %}
+            <div class="profile-til">
+                <h5>Tell Me Something I Don't Know (TIL)</h5>
+                <p>{{ profile_obj.til }}</p>
+            </div>
+        {% endif %}
+
+        <a href="{% url 'projek:profile_update' %}" class="edit-profile-btn">Edit Profil</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+{# Hapus link CSS kosong ini, karena gaya utama sudah di handle oleh base.css dan kelas di bawah #}
+
+<div class="list-container"> 
+    <div class="dashboard-header">
+        <h2 class="dashboard-title">{{ page_title }}</h2>
+        <div class="actions"> {
+            <a href="{% url 'projek:edit_problem_framing' problem_framing.pk %}" class="btn btn-sm btn-info" title="Edit Model Training">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'projek:problem_framing_list' %}" class="btn btn-sm btn-secondary" title="Kembali ke Daftar">
+                <i class="fas fa-list"></i> Kembali ke Daftar
+            </a>
+        </div>
+    </div>
+
+    <div class="dashboard-panel"> {# Menggunakan dashboard-panel untuk efek visual #}
+        <h3 class="panel-title">Detail Pelatihan Model</h3>
+        
+        <dl class="row">
+            <dt class="col-sm-3">Proyek Terkait:</dt>
+            <dd class="col-sm-9"><a href="{% url 'projek:view_project' problem_framing.pk %}">{{ problem_framing.project.name }}</a></dd>
+
+            <dt class="col-sm-3">Nama Model:</dt>
+            <dd class="col-sm-9">{{ problem_framing.model_name }}</dd>
+
+            <dt class="col-sm-3">Tipe Model:</dt>
+            <dd class="col-sm-9">{{ problem_framing.get_model_type_display }}</dd> {# Menggunakan get_FOO_display untuk choices #}
+
+            <dt class="col-sm-3">Algoritma Digunakan:</dt>
+            <dd class="col-sm-9">{{ problem_framing.algorithm_used|default:"-" }}</dd>
+
+            <dt class="col-sm-3">Hyperparameter:</dt>
+            <dd class="col-sm-9">{{ problem_framing.hyperparameters|default:"-"|linebreaksbr }}</dd>
+
+            <dt class="col-sm-3">Data Pelatihan Digunakan:</dt>
+            <dd class="col-sm-9">
+                {% if problem_framing.problem_framing %}
+                    <a href="{% url 'projek:view_problem_framing' problem_framing.pk %}"> {# Menggunakan PK DataProcessing #}
+                        {{ problem_framing.training_data_used.project.name }} - {{ training_model.training_data_used.processing_description|truncatechars:50 }}
+                    </a>
+                {% else %}
+                    -
+                {% endif %}
+            </dd>
+
+            <dt class="col-sm-3">Metrik Evaluasi:</dt>
+            <dd class="col-sm-9">{{ training_model.evaluation_metrics|linebreaksbr }}</dd>
+
+            <dt class="col-sm-3">Performa Model:</dt>
+            <dd class="col-sm-9">{{ training_model.model_performance|linebreaksbr }}</dd>
+
+            <dt class="col-sm-3">Path Model Tersimpan:</dt>
+            <dd class="col-sm-9">{{ training_model.model_path|default:"-" }}</dd>
+
+            <dt class="col-sm-3">Dilatih Oleh:</dt>
+            <dd class="col-sm-9">{{ training_model.trained_by.username|default:"N/A" }}</dd>
+
+            <dt class="col-sm-3">Tanggal Pelatihan:</dt>
+            <dd class="col-sm-9">{{ training_model.training_date|date:"d M Y" }}</dd>
+
+            <dt class="col-sm-3">Dibuat Pada:</dt>
+            <dd class="col-sm-9">{{ training_model.created_at|date:"d M Y, H:i" }}</dd>
+
+            <dt class="col-sm-3">Terakhir Diperbarui:</dt>
+            <dd class="col-sm-9">{{ training_model.updated_at|date:"d M Y, H:i" }}</dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+<div class="list-container"> 
+    <div class="dashboard-header">
+        <h2 class="dashboard-title">{{ page_title }}</h2>
+    </div>
+
+    
+
+    <div class="dashboard-panel">
+
+        <h3 class="panel-title">Daftar Problem Framing</h3>
+        
+        <a href="{% url 'projek:select_project_for_framing' %}" class="btn btn-success mt-3">Problem Framing Baru
+        </a>
+
+        {% if problem_framings %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover intelligence-entry"> {# Menambahkan kelas intelligence-entry agar styling tabel berlaku #}
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Proyek</th>
+                        <th>Deskripsi Masalah</th>
+                        <th>Target Goal</th>
+                        <th>Stock</th>
+                        <th>Inflow</th>
+                        <th>Outflow</th>
+                        <th>Data Diperlukan</th>
+                        <th>Di-frame oleh</th>
+                        <th>Tanggal Dibuat</th>
+                        <th class="text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pf in problem_framings %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ pf.project.name }}</td>
+                        <td>{{ pf.problem_description|truncatechars:70 }}</td>
+                        <td>{{ pf.target_goal|truncatechars:70 }}</td>
+                        <td>{{ pf.stock_initial_state|truncatechars:70 }}</td>
+                        <td>{{ pf.input_inflow_description|truncatechars:70 }}</td>
+                        <td>{{ pf.output_outflow_description|truncatechars:70 }}</td>
+                        <td>{{ pf.key_features_data|truncatechars:70 }}</td>
+                        <td>{{ pf.framed_by.username|default:"N/A" }}</td>
+                        <td>{{ pf.created_at|date:"d M Y" }}</td>
+
+                        <td class="actions text-center">
+                            <a href="{% url 'projek:view_problem_framing' pf.pk %}" class="btn btn-sm btn-danger">View</a>
+                            <a href="{% url 'projek:edit_problem_framing' pf.pk %}" class="btn btn-sm btn-danger">Edit</a>
+                            <a href="{% url 'projek:delete_problem_framing' pf.pk %}" class="btn btn-sm btn-danger">Delete</a>
+
+
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info" role="alert">
+            <i class="fas fa-info-circle"></i> Belum ada entri Problem Framing. Klik tombol "Problem Framing Baru" untuk memulai.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

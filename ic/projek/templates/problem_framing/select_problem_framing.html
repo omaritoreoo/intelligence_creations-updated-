@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css'%}">
+
+<div class="dashboard-content-wrapper">
+    <div class="dashboard-header">
+        <h2 class="dashboard-title">{{ page_title }}</h2>
+    </div>
+
+    <div class="dashboard-panel">
+        <h3>Proyek Tersedia untuk Problem Framing</h3>
+        <table class="intelligence-entry">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nama Proyek</th>
+                    <th>Deskripsi</th>
+                    <th>Lokasi</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ project.name }}</td>
+                    <td>{{ project.description|truncatechars:100 }}</td>
+                    <td>{{ project.location }}</td>
+                    <td>
+                        <span class="status-badge status-{{ project.status|lower }}">
+                            {{ project.status }}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="{% url 'projek:create_problem_framing' project.pk %}" class="btn btn-sm btn-info">Mulai Problem Framing</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">Tidak ada proyek yang perlu di-frame saat ini.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

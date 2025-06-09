@@ -1,0 +1,363 @@
+/* static/css/base.css */
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+}
+
+.sidebar {
+    height: 100vh;
+    width: 280px;
+    position: fixed;
+    background: rgba(216, 138, 186, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 20px;
+    color: white;
+    box-shadow:
+        20px 0 60px rgba(216, 138, 186, 0.3),
+        inset -1px 0 0 rgba(255, 255, 255, 0.2);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+    overflow-y: auto; /* Kembalikan scroll tapi dengan styling yang lebih halus */
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    pointer-events: none;
+    border-radius: 0 25px 25px 0;
+}
+
+.sidebar-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Penting untuk flex container */
+}
+
+.sidebar .profile {
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+.sidebar .profile img {
+    width: 70px; /* Ukuran sedang */
+    height: 70px;
+    border-radius: 50%;
+    background: white;
+    margin-bottom: 12px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        0 2px 8px rgba(255, 255, 255, 0.2) inset;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    object-fit: cover;
+    transition: all 0.3s ease;
+}
+
+.sidebar .profile img:hover {
+    transform: scale(1.05);
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.15),
+        0 2px 8px rgba(255, 255, 255, 0.3) inset;
+}
+
+.sidebar .profile .name {
+    font-weight: 600;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar .profile .btn a {
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    display: block;
+    margin-top: -2px;
+    transition: color 0.3s ease;
+}
+
+.sidebar .profile .btn a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+.sidebar hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    margin: 18px 0;
+    flex-shrink: 0;
+}
+
+/* Navigation area yang bisa di-scroll jika perlu */
+.navigation-area {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 5px; /* Ruang untuk scrollbar */
+}
+
+.sidebar a {
+    display: block;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 13px 18px;
+    margin: 8px 0;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 500;
+    font-size: 0.95em;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar a::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.sidebar a:hover::before {
+    left: 100%;
+}
+
+.sidebar a:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(5px);
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+    color: white;
+}
+
+.sidebar a:active {
+    transform: translateX(3px) scale(0.98);
+}
+
+.dropdown-toggle::after {
+    content: '▼';
+    float: right;
+    margin-top: 2px;
+    font-size: 0.7em;
+    transition: transform 0.3s ease;
+}
+
+.dropdown-toggle[aria-expanded="true"]::after {
+    transform: rotate(180deg);
+}
+
+.collapse {
+    margin-top: 4px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+/* Styling untuk item submenu */
+.sidebar .collapse a {
+    background: rgba(0, 0, 0, 0.15);
+    margin: 4px 0 4px 15px;
+    padding: 10px 15px;
+    font-size: 0.85em;
+    border-radius: 10px;
+    border: none;
+}
+
+.sidebar .collapse a:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(3px);
+}
+
+/* Logout area di bagian bawah - tidak scroll */
+.logout-area {
+    flex-shrink: 0;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.logout-button {
+    background-color: transparent;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 13px 18px;
+    width: 100%;
+    text-align: left;
+    font-size: 0.95em;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    font-weight: 500;
+}
+
+.logout-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.logout-button:hover::before {
+    left: 100%;
+}
+
+.logout-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(5px);
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.logout-button:active {
+    transform: translateX(3px) scale(0.98);
+}
+
+.content {
+    margin-left: 300px;
+    padding: 30px;
+    min-height: 100vh;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 25px 0 0 0;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05);
+}
+
+/* Scrollbar styling yang lebih halus */
+.sidebar::-webkit-scrollbar,
+.navigation-area::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track,
+.navigation-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb,
+.navigation-area::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover,
+.navigation-area::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-radius: 0;
+    }
+
+    .content {
+        margin-left: 0;
+        border-radius: 0;
+    }
+    
+    .sidebar .profile img {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+/* Animasi halus untuk expanded submenu */
+.collapse.show {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Add subtle animation on page load */
+.sidebar {
+    animation: slideInFromLeft 0.6s ease-out;
+}
+
+@keyframes slideInFromLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.content {
+    animation: fadeIn 0.8s ease-out 0.2s both;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
