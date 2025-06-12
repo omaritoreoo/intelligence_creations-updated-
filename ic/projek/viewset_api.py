@@ -33,7 +33,7 @@ class IntelligenceEngineeringViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Contoh: Jika Anda ingin proyek harus diisi saat pembuatan IntelligenceEngineering
         if 'project' not in self.request.data:
-            raise serializers.ValidationError({"project": "Project ID is required."})
+            raise serializer.ValidationError({"project": "Project ID is required."})
         serializer.save()
 
 

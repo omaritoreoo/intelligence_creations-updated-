@@ -19,7 +19,7 @@ urlpatterns = [
 
      # --- URL Problem Framing ---
     path('problem-framing/select-project/', views.select_problem_framings, name='select_project_for_framing'), # Pilih proyek untuk PF
-    path('problem-framing/create/<int:pk>/', views.create_problem_framing_view, name='create_problem_framing'), # Buat Problem Framing
+    path('problem-framing/create/<int:project_id>/', views.create_problem_framing_view, name='create_problem_framing'), # Buat Problem Framing
     path('problem-framing/list/', views.problem_framing_list_view, name='problem_framing_list'), # Daftar semua Problem Framing
     path('problem-framing/edit/<int:pk>/', views.edit_problem_framing_view, name='edit_problem_framing'), # Edit Problem Framing
     path('problem-framing/view/<int:pk>/', views.problem_framing_detail_view, name='view_problem_framing'), # Edit Problem Framing
@@ -39,7 +39,7 @@ urlpatterns = [
     path('processing/select-project/', views.select_project_for_data_processing_view, name='select_project_for_data_processing_view'),
     path('processing/view/<int:pk>/', views.data_processing_detail_view, name='view_data_processing_view'),
     path('processing/edit/<int:pk>/', views.edit_data_processing_view, name='edit_data_processing_view'),
-    path('processing/create/<int:pk>/', views.create_data_processing_view, name='create_data_processing_view'),
+    path('processing/create/<int:project_id>/', views.create_data_processing_view, name='create_data_processing_view'),
     path('processing/list/', views.data_processing_list_view, name='data_processing_list_view'),
     path('processing-list/<int:pk>/delete/', views.delete_processing_data, name='delete_processing_data'),
 
