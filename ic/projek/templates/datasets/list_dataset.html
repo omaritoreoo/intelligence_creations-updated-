@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+<div class="list-container">
+    <div class="dashboard-header">
+        <h2 class="dashboard-title">{{ page_title }}</h2>
+    </div>
+
+    <div class="dashboard-panel">
+        {% if datasets %}
+            <div class="table-responsive"> {# Kontainer untuk tabel yang responsif #}
+                <table class="data-table"> {# Kelas CSS kustom untuk tabel di dashboard.css #}
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nama Dataset</th>
+                            <th>Deskripsi</th>
+                            <th>Ukuran</th>
+                            <th>Terakhir Diperbarui</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dataset in datasets %}
+                            <tr>
+                                <td>{{ dataset.id }}</td>
+                                <td>{{ dataset.name }}</td>
+                                <td>{{ dataset.description|default:"Tidak ada deskripsi" }}</td>
+                                <td>{{ dataset.size|default:"N/A" }}</td>
+                                <td>{{ dataset.last_updated|default:"N/A" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="no-data-message">Tidak ada data dataset yang tersedia.</p>
+            {# Jika Anda mengaktifkan 'error_message' di views.py, akan ditampilkan di sini #}
+            {% if error_message %}
+                <p class="error-message">{{ error_message }}</p>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

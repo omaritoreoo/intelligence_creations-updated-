@@ -118,9 +118,6 @@ def dashboard(request):
         elif 'sync_intelligence_engineering' in request.POST:
             # Panggil fungsi dan biarkan dia sendiri yang menangani messages
             sync_intelligence_engineering_from_external_api(request)
-        elif 'sync_all_data' in request.POST:
-            # Panggil fungsi dan biarkan dia sendiri yang menangani messages
-            sync_all_external_data(request)
         
         return redirect('projek:dashboard') # Redirect kembali ke dashboard setelah sinkronisasi
 
@@ -498,11 +495,35 @@ def get_request_data_api(request, projek_id):
         return JsonResponse({'error': 'Data entry not found'}, status=404)
 
 
-#--DATASETS--
 @login_required
 def datasets(request):
-    return
+    api_url = "https://undirty.pythonanywhere.com/api/receive-message/"
+    dataset_data = [] # Inisialisasi list kosong untuk data dataset
 
+    try:
+        # Melakukan permintaan HTTP GET ke API
+        response = requests.get(api_url)
+        response.raise_for_status() # Akan memunculkan HTTPError untuk respons status kode yang buruk (4xx atau 5xx)
+
+        # Memparsing respons JSON
+        # Asumsikan API mengembalikan list of dictionaries
+        dataset_data = response.json()
+
+    except requests.exceptions.RequestException as e:
+        # Menangani kesalahan jika permintaan API gagal
+        print(f"Error saat mengambil data dari API: {e}")
+        # Anda bisa menambahkan pesan error ke context untuk ditampilkan di template
+        # context['error_message'] = "Gagal memuat data dataset. Silakan coba lagi nanti."
+    except ValueError as e:
+        # Menangani kesalahan jika respons bukan JSON yang valid
+        print(f"Error parsing JSON dari API: {e}")
+        # context['error_message'] = "Respons API tidak valid."
+
+    context = {
+        'page_title': "Daftar Datasets",
+        'datasets': dataset_data, # Mengirimkan data dataset ke template
+    }
+    return render(request, 'datasets/list_dataset.html', context)
 
 #------- INTELLIGENCE ENGINEERING ----------
 @login_required

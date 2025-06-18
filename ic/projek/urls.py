@@ -39,6 +39,9 @@ urlpatterns = [
     path('dataset-request/api/<int:projek_id>/', views.get_request_data_api, name='get_request_data_api'),
     path('problem-framing/api<int:pk>/',views.problem_framing_api, name="get_problem_framing_api"),
 
+    # -- URL: Datasets
+    path('datasets', views.datasets, name='datasets'),
+
     # --- URL : Permintaan Data Processing ---
     path('processing/select-project/', views.select_project_for_data_processing_view, name='select_project_for_data_processing_view'),
     path('processing/view/<int:pk>/', views.data_processing_detail_view, name='view_data_processing_view'),
