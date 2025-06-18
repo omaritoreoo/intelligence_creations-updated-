@@ -16,6 +16,10 @@ urlpatterns = [
     path('projek/create', views.create_project_view, name='create_project'),
     path('projek/<int:project_id>/edit/', views.edit_project_view, name='update_project'),
     path('projek/<int:project_id>/view/', views.project_detail_view, name='view_project'),
+    path('projek/<int:project_id>/delete/', views.delete_project_view, name='delete_project'),
+
+    #-- URL ENGIINERRING --#
+    path('projects/<int:project_id>/ie/detail/', views.intelligence_engineering_detail, name='intelligence_engineering_detail'),
 
      # --- URL Problem Framing ---
     path('problem-framing/select-project/', views.select_problem_framings, name='select_project_for_framing'), # Pilih proyek untuk PF

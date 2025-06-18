@@ -20,6 +20,22 @@
         <p><strong>Tanggal:</strong> {{ project.start_date|date:"d M Y" }} hingga {{ project.end_date|date:"d M Y" }}</p>
         <hr>
 
+        <h2>Data dari Intelligence Engineering (API)</h2>
+        {% if meaningful_objectives %}
+            <div class="alert alert-info" role="alert">
+                <p><strong>Tujuan Organisasional:</strong> {{ meaningful_objectives.organizational|default:"Tidak ada data" }}</p>
+                <p><strong>Hasil Pengguna:</strong> {{ meaningful_objectives.user_outcomes|default:"Tidak ada data" }}</p>
+                <p><strong>Properti Model:</strong> {{ meaningful_objectives.model_properties|default:"Tidak ada data" }}</p>
+            </div>
+         {% else %}
+            <div class="alert alert-warning" role="alert">
+                <p>Data Intelligence Engineering (Meaningful Objectives) tidak ditemukan untuk proyek ini atau terjadi kesalahan saat mengambil data.</p>
+            </div>
+        {% endif %}
+
+        <hr>
+
+        
         <h3>Formulir Problem Framing</h3>
         <form method="post">
             {% csrf_token %}
@@ -36,7 +52,7 @@
 
             <div class="button-group" style="margin-top: 20px;">
                 <button type="submit" class="btn btn-primary">Simpan Problem Framing</button>
-                <a href="{% url 'projek:model_training_list' %}" class="btn btn-secondary">Batal</a>
+                <a href="{% url 'projek:problem_framing_list' %}" class="btn btn-secondary">Batal</a>
             </div>
         </form>
     </div>

@@ -43,17 +43,13 @@
 
         <div class="navigation-area">
             <a href="{% url 'projek:dashboard' %}">Dashboard</a>
+            <a href="{% url 'projek:problem_framing_list' %}">Problem Framing</a>
 
-            <a href="#dataEntrySubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Data Entry</a>
-            <div class="collapse" id="dataEntrySubmenu">
-                <a href="{% url 'projek:list_projek' %}">Projek (uji coba)</a>
-                <a href="{% url 'projek:problem_framing_list' %}">Problem Framing</a>
-            </div>
+            
 
             <a href="#datasetsmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Datasets</a>
             <div class="collapse" id="datasetsmenu">
-                <a href="{% url 'projek:select_project_for_dataset_request' %}">Request Dataset</a>
-                <a href="{% url 'projek:dataset_request_list' %}">Daftar Datasets</a>
+                <a href="{% url 'projek:dataset_request_list' %}">Request Datasets</a>
             </div>
 
             <a href="#modelTrainingsubMenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Processing</a>

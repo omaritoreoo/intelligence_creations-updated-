@@ -2,40 +2,88 @@
 {% load crispy_forms_tags %}
 {% load static %}
 
-
-
-
 {% block content %}
+{# Custom CSS for Dashboard #}
 <link rel="stylesheet" href="{% static 'css/dashboard.css'%}">
+{# Font Awesome for icons #}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
 <div class="dashboard-content-wrapper">
     <div class="dashboard-header">
-        <img src="https://cdn-icons-png.flaticon.com/512/2920/2920277.png" alt="Logo Dashboard" style="height: 40px; margin-right: 15px;">
+        <img src="https://cdn-icons-png.flaticon.com/512/2920/2920277.png" alt="Logo Dashboard" class="dashboard-logo">
         <h2 class="dashboard-title">Dashboard</h2>
     </div>
+
+    {# Display Django Messages (Success/Error from sync or other actions) #}
+    {% if messages %}
+        <div class="messages mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     <div class="dashboard-grid">
         <div class="dashboard-panel visualization-area">
             <h3>Visualisasi Grafik Training</h3>
-            <p style="color: #666; margin: 0; position: relative; z-index: 2;">Data training visualization akan ditampilkan di sini dengan chart interaktif.</p>
+            <p class="text-muted">Data training visualization will be displayed here with interactive charts.</p>
+            {# Placeholder for your chart rendering #}
+            <div id="training-chart-container" style="height: 300px; background-color: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #aaa;">
+                Grafik training akan muncul di sini (misal: menggunakan Chart.js/Plotly)
+            </div>
         </div>
         <div class="dashboard-panel comparison-area">
-            <h3>Perbandingan akurasi antar model</h3>
-            <p style="color: #666; margin: 0; position: relative; z-index: 2;">Comparative analysis antar model AI akan ditampilkan dalam bentuk grafik.</p>
+            <h3>Perbandingan Akurasi Antar Model</h3>
+            <p class="text-muted">Comparative analysis between AI models will be displayed in graph form.</p>
+            {# Placeholder for your comparison chart rendering #}
+            <div id="comparison-chart-container" style="height: 300px; background-color: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #aaa;">
+                Grafik perbandingan model akan muncul di sini
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-panel">
+        <h3>Aksi Cepat & Sinkronisasi Data</h3>
+        <div class="d-flex flex-wrap align-items-center mb-3 quick-actions-container">
+            {# Form for Sync Projects button #}
+            <form method="post" class="mr-3 mb-2">
+                {% csrf_token %}
+                <button type="submit" name="sync_projects" class="btn btn-primary btn-sm">
+                    <i class="fas fa-sync-alt"></i> Sinkronkan Proyek
+                </button>
+            </form>
+
+            {# Form for Sync Intelligence Engineering button #}
+            <form method="post" class="mr-3 mb-2">
+                {% csrf_token %}
+                <button type="submit" name="sync_intelligence_engineering" class="btn btn-info btn-sm">
+                    <i class="fas fa-sync-alt"></i> Sinkronkan Rekayasa Kecerdasan
+                </button>
+            </form>
+
+
+
+            
         </div>
     </div>
 
     <div class="dashboard-panel">
         <h3>Daftar Proyek Terbaru</h3>
-        <table class="intelligence-entry">
+        <table class="table intelligence-entry table-hover table-striped"> {# Added Bootstrap table classes #}
             <thead>
                 <tr>
                     <th>#</th>
                     <th>Nama Proyek</th>
                     <th>Deskripsi</th>
+                    <th>Lokasi</th>
                     <th>Status</th>
                     <th>Dibuat Oleh</th>
-                    <th>Tanggal Dibuat</th>
+                    <th>Tanggal Mulai</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -44,30 +92,100 @@
                 <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>{{ project.name }}</td>
-                    <td>{{ project.description|truncatechars:50 }}</td> {# Potong deskripsi jika terlalu panjang #}
+                    <td>{{ project.description|truncatechars:50 }}</td>
+                    <td>{{ project.location }}</td>
                     <td>
                         <span class="status-badge status-{{ project.status|lower }}">
-                            {{ project.status }}
+                            {{ project.get_status_display }}
                         </span>
                     </td>
-                    <td>{{ project.created_by.username|default:"N/A" }}</td>
-                    <td>{{ project.created_at|date:"d M Y" }}</td>
+                    <td>{{ project.supervisor|default:"N/A" }}</td> {# Corrected: Use project.supervisor directly #}
+                    <td>{{ project.start_date|date:"d M Y" }}</td>
                     <td class="actions">
-                        <a href="{% url 'projek:view_project' project.id %}" class="btn btn-sm btn-info">View</a>
-                        {# Tambahkan tombol edit atau delete jika diperlukan #}
-                        <a href="{% url 'projek:update_project' project.id %}" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="{% url 'projek:view_project' project.id %}" class="btn btn-sm btn-info" title="Lihat Detail Proyek">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        {# Corrected: This is now a DELETE button #}
+                        <a href="{% url 'projek:delete_project' project.id %}" class="btn btn-sm btn-danger" title="Hapus Proyek">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </a>
+                        
+                        {% if project.intelligence_engineering %}
+                            <a href="{% url 'projek:intelligence_engineering_detail' project.id %}" class="btn btn-sm btn-secondary" title="Lihat Detail Rekayasa Kecerdasan">
+                                <i class="fas fa-brain"></i> Detail IE
+                            </a>
+                        {% else %}
+                            <span class="text-muted"><small>No IE Data</small></span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7">Belum ada proyek yang dibuat.</td>
+                    <td colspan="8" class="text-center">Belum ada proyek yang dibuat atau disinkronkan.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <a href="{% url 'projek:create_project' %}" class="btn btn-success mt-3">Buat Proyek Baru</a>
         <a href="{% url 'projek:list_projek' %}" class="btn btn-primary mt-3">Lihat Semua Proyek</a>
-
     </div>
+
+    {# --- PANEL BARU UNTUK INTELLIGENCE ENGINEERING --- #}
+    <div class="dashboard-panel mt-4">
+        <h3>Daftar Entri Rekayasa Kecerdasan</h3>
+        <table class="table intelligence-entry table-hover table-striped"> {# Added Bootstrap table classes #}
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Proyek Terkait</th>
+                    <th>Tujuan Organisasi (MO)</th>
+                    <th>Otomatisasi (IE)</th>
+                    <th>Proses Bisnis (II)</th>
+                    <th>Realisasi (SR)</th>
+                    <th>Tanggal Dibuat</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ie_entry in intelligence_engineerings %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        {% if ie_entry.project %}
+                            <a href="{% url 'projek:view_project' ie_entry.project.id %}" title="Lihat Detail Proyek">
+                                {{ ie_entry.project.name }}
+                            </a>
+                        {% else %}
+                            <span class="text-muted">N/A (Proyek tidak ditemukan)</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ ie_entry.mo_organizational|truncatechars:50 }}</td>
+                    <td>{{ ie_entry.ie_automate|truncatechars:50 }}</td>
+                    <td>{{ ie_entry.ii_business_process|truncatechars:50 }}</td>
+                    <td>{{ ie_entry.sr_realization|truncatechars:50 }}</td>
+                    <td>{{ ie_entry.created_at|date:"d M Y" }}</td>
+                    <td class="actions">
+                        {% if ie_entry.project %}
+                            <a href="{% url 'projek:intelligence_engineering_detail' ie_entry.project.id %}" class="btn btn-sm btn-info" title="Lihat Detail Rekayasa Kecerdasan">
+                                <i class="fas fa-eye"></i> View IE
+                            </a>
+                            <a href="{% url 'projek:edit_intelligence_engineering' ie_entry.project.id %}" class="btn btn-sm btn-warning" title="Edit Rekayasa Kecerdasan">
+                                <i class="fas fa-edit"></i> Edit IE
+                            </a>
+                        {% else %}
+                            <span class="text-muted"><small>Tidak ada aksi</small></span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">Belum ada entri Rekayasa Kecerdasan yang dibuat atau disinkronkan.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {# Optionally add a link to a separate list view for all IE entries if you create one #}
+        {# <a href="{% url 'projek:intelligence_engineering_list' %}" class="btn btn-primary mt-3">Lihat Semua Rekayasa Kecerdasan</a> #}
+    </div>
+
 </div>
 {% endblock %}

@@ -5,14 +5,13 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Field
 from django.core.exceptions import ValidationError # Import ValidationError
 
-
-class ProfileForm(forms.ModelForm): # Ini adalah form yang sudah Anda berikan
+class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ['profile_picture', 'bio', 'til']
         widgets = {
             'bio': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Ceritakan tentang diri Anda...'}),
-            'til': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Tell me something I dont know...'}), # Placeholder untuk 'til'
+            'til': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Tell me something I dont know...'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -21,8 +20,7 @@ class ProfileForm(forms.ModelForm): # Ini adalah form yang sudah Anda berikan
         self.helper.layout = Layout(
             Field('profile_picture', css_class='form-control-file'),
             Field('bio', css_class='form-control'),
-            Field('til', css_class='form-control'), # Menambahkan 'til' ke layout
-            # Submit button akan ditambahkan secara terpisah di template jika Anda ingin dua form terpisah
+            Field('til', css_class='form-control'),
         )
 
 class UserUpdateForm(forms.ModelForm):
@@ -44,7 +42,6 @@ class UserUpdateForm(forms.ModelForm):
             Field('first_name', css_class='form-control'),
             Field('last_name', css_class='form-control'),
             Field('email', css_class='form-control'),
-            # Submit button akan ditambahkan secara terpisah di template jika Anda ingin dua form terpisah
         )
 
         self.user = kwargs.get('instance')
@@ -59,7 +56,6 @@ class UserUpdateForm(forms.ModelForm):
 class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
-        # Tentukan bidang mana dari model Project yang ingin Anda tampilkan di formulir
         fields = [
             'name',
             'description',
@@ -69,40 +65,40 @@ class ProjectForm(forms.ModelForm):
             'supervisor',
             'status'
         ]
-        # Widgets untuk kustomisasi tampilan bidang formulir (opsional, tapi disarankan untuk tanggal)
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Deskripsi lengkap proyek'}),
             'location': forms.TextInput(attrs={'placeholder': 'Lokasi proyek (misal: Jakarta, Head Office)'}),
-            'start_date': forms.DateInput(attrs={'type': 'date'}), # Penting agar tampil sebagai kalender di browser
-            'end_date': forms.DateInput(attrs={'type': 'date'}),   # Penting agar tampil sebagai kalender di browser
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
         }
 
 class IntelligenceEngineeringForm(forms.ModelForm):
     class Meta:
         model = IntelligenceEngineering
-        fields = '__all__' 
+        fields = '__all__'
         widgets = {
-            'organization_objective': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'leading_indicator': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'user_outcome': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'model_properties': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'automate': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'prompt': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'annotate': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'organization_of_intelligence': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'system_objective': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'minimize_flaws': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'create_data': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'business_process': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'technology': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'build_process': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'development_constraints': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'realization_status': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'deployment': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'maintenance': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'operating_system_environment': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            # Pastikan nama field di sini sesuai dengan nama field di model IntelligenceEngineering Anda.
+            # Berdasarkan model yang Anda berikan sebelumnya, field-nya adalah:
+            'mo_organizational': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'mo_leading_indicators': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'mo_user_outcomes': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'mo_model_properties': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'ie_automate': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'ie_prompt': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'ie_annotate': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'ie_organization': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'ie_system_objectives': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'ie_minimize_flaws': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'ie_create_data': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'ii_business_process': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'ii_technology': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'ii_build_process': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'bd_limitation': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'sr_realization': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'pr_deployment': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'pr_maintenance': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+            'pr_operating': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
         }
-
 
 
 class ProblemFramingForm(forms.ModelForm):
@@ -129,8 +125,6 @@ class ProblemFramingForm(forms.ModelForm):
 class DatasetRequestForm(forms.ModelForm):
     class Meta:
         model = DatasetRequest
-        # project dan requested_by akan diisi otomatis di view
-        # status juga akan diisi otomatis ke 'Pending'
         fields = [
             'description_problem',
             'target_for_dataset',
@@ -153,69 +147,113 @@ class DatasetRequestForm(forms.ModelForm):
             'end_date_needed': forms.DateInput(attrs={'type': 'date'}),
         }
 
-#get dataset (nanti aja)
-
-
-
-#data_processing
+# --- DataProcessingForm (YANG SUDAH DIUBAH) ---
 class DataProcessingForm(forms.ModelForm):
     class Meta:
         model = DataProcessing
         fields = [
-            'project', # Mungkin akan disembunyikan atau diisi otomatis di view
-            'data_source',
-            'cleaning_steps',
-            'transformation_steps',
-            'feature_engineering',
-            'data_quality_metrics',
+            'project', # Tetap di sini agar bisa diinisialisasi
+            'data_source_description',
+            'processing_steps_summary',
+            'feature_engineering_details',
             'processed_data_location',
-            # 'processed_by' akan diisi otomatis di view
+            'processed_file',
+            'status',
+            # 'processed_by' akan diisi di view, tidak perlu di form
         ]
         widgets = {
-            'data_source': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Contoh: PostgreSQL database "sales_db", API Google Analytics, file CSV dari S3 bucket.'}),
-            'cleaning_steps': forms.Textarea(attrs={'rows': 5, 'placeholder': 'Detail langkah pembersihan data: handle missing values, remove duplicates, etc.'}),
-            'transformation_steps': forms.Textarea(attrs={'rows': 5, 'placeholder': 'Detail langkah transformasi data: normalisasi, one-hot encoding, feature scaling.'}),
-            'feature_engineering': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Jelaskan fitur baru yang dibuat (misal: rasio penjualan per pelanggan, usia pelanggan).'}),
-            'data_quality_metrics': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Contoh: Akurasi data 98%, kelengkapan data 99%, konsistensi data.'}),
-            'processed_data_location': forms.TextInput(attrs={'placeholder': 'Path atau URL penyimpanan data yang sudah diproses.'}),
+            'project': forms.HiddenInput(), # Menyembunyikan field project dari user
+            'data_source_description': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Misal: Data dari Database Penjualan, File Excel Hasil Survei Pelanggan'}),
+            'processing_steps_summary': forms.Textarea(attrs={'rows': 4, 'class': 'form-control', 'placeholder': 'Ringkasan langkah pembersihan (duplikat, nilai hilang) dan transformasi (normalisasi, agregasi).'}),
+            'feature_engineering_details': forms.Textarea(attrs={'rows': 4, 'class': 'form-control', 'placeholder': 'Jelaskan bagaimana fitur-fitur baru dibuat dari data mentah.'}),
+            'processed_data_location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Path atau URL penyimpanan data yang sudah diproses.'}),
+            'processed_file': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'data_source_description': 'Deskripsi Sumber Data',
+            'processing_steps_summary': 'Ringkasan Pembersihan & Transformasi',
+            'feature_engineering_details': 'Detail Rekayasa Fitur',
+            'processed_data_location': 'Lokasi File Data Diproses',
+            'processed_file': 'File Data Diproses (CSV/lainnya)',
+            'status': 'Status Pemrosesan',
         }
 
     def __init__(self, *args, **kwargs):
+        # Ambil project instance jika diberikan (untuk initial value hidden field)
+        project_instance = kwargs.pop('project_instance', None)
         super().__init__(*args, **kwargs)
-        # Jika Anda ingin menyembunyikan field 'project' di form (karena diisi di view)
-        #self.fields['project'].widget = forms.HiddenInput()
 
-#training model
+        # Set initial value untuk field 'project' jika ada project_instance
+        if project_instance:
+            self.fields['project'].initial = project_instance
+            # Opsional: Jika Anda ingin memastikan project tidak bisa diubah bahkan dari inspeksi elemen,
+            # Anda bisa membuatnya readonly, meski hiddenInput sudah cukup.
+            # self.fields['project'].widget.attrs['readonly'] = True
+
+        # Tambahkan kelas form-control ke semua field yang tersisa secara dinamis
+        for field_name, field in self.fields.items():
+            if field_name not in ['project', 'processed_file']: # Skip hidden dan file input
+                if isinstance(field.widget, (forms.TextInput, forms.NumberInput, forms.Textarea, forms.Select, forms.DateInput, forms.DateTimeInput)):
+                    field.widget.attrs.update({'class': 'form-control'})
+
 class TrainingModelForm(forms.ModelForm):
     class Meta:
         model = TrainingModel
         fields = [
-            'project', # Mungkin akan disembunyikan atau diisi otomatis di view
+            'project',
             'model_name',
             'model_type',
             'algorithm_used',
-            'hyperparameters',
-            'training_data_used', # Pilihan dropdown untuk DataProcessing
-            'evaluation_metrics',
+            'training_data_used',
             'model_performance',
-            # 'trained_by' dan 'training_date' akan diisi otomatis
-            'model_path',
+            'model_path', # Ini adalah FileField dari models.py
+            'refining_strategy',
+            'refining_status',
+            'refined_performance',
         ]
         widgets = {
-            'model_name': forms.TextInput(attrs={'placeholder': 'Nama unik untuk model ini (misal: Sales_Prediction_v1)'}),
-            'algorithm_used': forms.TextInput(attrs={'placeholder': 'Contoh: Logistic Regression, CNN, Decision Tree.'}),
-            'hyperparameters': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Contoh: {"learning_rate": 0.01, "epochs": 100, "batch_size": 32}'}),
-            'evaluation_metrics': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Contoh: Accuracy, Precision, Recall, F1-score.'}),
-            'model_performance': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Contoh: Accuracy: 0.85, F1-score: 0.80, RMSE: 12.5.'}),
-            'model_path': forms.TextInput(attrs={'placeholder': 'Lokasi penyimpanan file model (misal: /models/sales_v1.pkl)'}),
+            'project': forms.HiddenInput(),
+            'model_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Misal: Model Prediksi Churn v1'}),
+            'model_type': forms.Select(attrs={'class': 'form-control'}),
+            'algorithm_used': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Misal: Random Forest, Neural Network'}),
+            'training_data_used': forms.Select(attrs={'class': 'form-control'}),
+            'model_performance': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': '{"accuracy": 0.89, "f1_score": 0.85} (format JSON)'}),
+            
+            # --- WIDGET INI SUDAH BENAR UNTUK FileField ---
+            'model_path': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
+            # -----------------------------------------------
+            
+            'refining_strategy': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Jelaskan strategi untuk meningkatkan performa model (misal: Hyperparameter tuning).'}),
+            'refining_status': forms.Select(attrs={'class': 'form-control'}),
+            'refined_performance': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': '{"accuracy": 0.91, "rmse": 0.5} (format JSON, jika ada refining)'}),
+        }
+        labels = {
+            'model_name': 'Nama Model',
+            'model_type': 'Tipe Model',
+            'algorithm_used': 'Algoritma Digunakan',
+            'training_data_used': 'Data Pelatihan Digunakan',
+            'model_performance': 'Performa Model (JSON)',
+            'model_path': 'File Model Terlatih', # Label yang lebih sesuai
+            'refining_strategy': 'Strategi Penyempurnaan',
+            'refining_status': 'Status Penyempurnaan',
+            'refined_performance': 'Performa Setelah Penyempurnaan (JSON)',
         }
 
     def __init__(self, *args, **kwargs):
+        project_instance = kwargs.pop('project_instance', None)
         super().__init__(*args, **kwargs)
-        # Filter pilihan 'training_data_used' berdasarkan 'project' jika diperlukan
-        # Ini akan membutuhkan 'project' instance dilewatkan ke form saat inisialisasi
-        if 'project' in self.initial:
-            project_instance = self.initial['project']
+
+        if project_instance:
+            self.fields['project'].initial = project_instance
             self.fields['training_data_used'].queryset = DataProcessing.objects.filter(project=project_instance)
-        # Jika Anda ingin menyembunyikan field 'project'
-        # self.fields['project'].widget = forms.HiddenInput()
+        elif self.instance and self.instance.project:
+            self.fields['training_data_used'].queryset = DataProcessing.objects.filter(project=self.instance.project)
+        else:
+            self.fields['training_data_used'].queryset = DataProcessing.objects.all()
+
+        for field_name, field in self.fields.items():
+            # Pastikan 'model_path' dikecualikan dari penambahan kelas 'form-control' default
+            if field_name not in ['project', 'model_path']: 
+                if isinstance(field.widget, (forms.TextInput, forms.NumberInput, forms.Textarea, forms.Select, forms.DateInput, forms.DateTimeInput)):
+                    field.widget.attrs.update({'class': 'form-control'})

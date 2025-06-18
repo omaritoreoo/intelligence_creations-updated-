@@ -1,0 +1,15 @@
+{% extends 'base.html' %} {# Assuming you have a base template #}
+
+{% block content %}
+    <div class="container">
+        <h2>{{ page_title }}</h2>
+        <hr>
+        <p>Apakah Anda yakin ingin menghapus {{ project.name }}?</p>
+
+        <form method="post" action="{% url 'projek:delete_project' project.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+            <a href="{% url 'projek:dashboard' %}" class="btn btn-secondary">Batal</a>
+        </form>
+    </div>
+{% endblock %}

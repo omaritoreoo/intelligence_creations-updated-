@@ -6,23 +6,37 @@
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 
-<div class="list-container"> 
+<div class="list-container">
     <div class="dashboard-header">
         <h2 class="dashboard-title">{{ page_title }}</h2>
     </div>
 
-    
-
     <div class="dashboard-panel">
 
         <h3 class="panel-title">Daftar Problem Framing</h3>
-        
-        <a href="{% url 'projek:select_project_for_framing' %}" class="btn btn-success mt-3">Problem Framing Baru
-        </a>
+
+        <div class="row mb-3 align-items-center"> {# Tambahkan align-items-center untuk perataan vertikal #}
+            <div class="col-md-7"> {# Sesuaikan lebar kolom untuk search bar #}
+                <form method="GET" action="{% url 'projek:problem_framing_list' %}">
+                    <div class="input-group">
+                        <input type="search" class="form-control" placeholder="Cari deskripsi, tujuan, atau nama proyek..." name="q" value="{{ query|default:'' }}">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="submit">Cari</button>
+                            {% if query %} {# Tampilkan tombol reset jika ada query #}
+                                <a href="{% url 'projek:problem_framing_list' %}" class="btn btn-outline-danger ml-1">Reset</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-5 text-right"> {# Sesuaikan lebar kolom untuk tombol #}
+                <a href="{% url 'projek:select_project_for_framing' %}" class="btn btn-success">Problem Framing Baru</a>
+            </div>
+        </div>
 
         {% if problem_framings %}
         <div class="table-responsive">
-            <table class="table table-bordered table-hover intelligence-entry"> {# Menambahkan kelas intelligence-entry agar styling tabel berlaku #}
+            <table class="table table-bordered table-hover intelligence-entry">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -53,13 +67,10 @@
                         <td>{{ pf.created_at|date:"d M Y" }}</td>
 
                         <td class="actions text-center">
-                            <a href="{% url 'projek:view_problem_framing' pf.pk %}" class="btn btn-sm btn-danger">View</a>
-                            <a href="{% url 'projek:edit_problem_framing' pf.pk %}" class="btn btn-sm btn-danger">Edit</a>
-                            <a href="{% url 'projek:delete_problem_framing' pf.pk %}" class="btn btn-sm btn-danger">Delete</a>
-
-
+                            <a href="{% url 'projek:view_problem_framing' pf.pk %}" class="btn btn-info btn-sm">View</a>
+                            <a href="{% url 'projek:edit_problem_framing' pf.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="{% url 'projek:delete_problem_framing' pf.pk %}" class="btn btn-danger btn-sm">Delete</a>
                         </td>
-
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -68,6 +79,9 @@
         {% else %}
         <div class="alert alert-info" role="alert">
             <i class="fas fa-info-circle"></i> Belum ada entri Problem Framing. Klik tombol "Problem Framing Baru" untuk memulai.
+            {% if query %}
+                <p>Tidak ditemukan hasil untuk pencarian "{{ query }}".</p>
+            {% endif %}
         </div>
         {% endif %}
     </div>

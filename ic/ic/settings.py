@@ -22,6 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-3-scds6(%%lf0d_w3m1b^y9^c@6ncve2-o#8q)cqy@16j%r%6l'
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False 
+SESSION_COOKIE_AGE = 1209600  # Contoh: 2 minggu
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -43,6 +45,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap4',
     'rest_framework',
     'rest_framework.authtoken',
+    'widget_tweaks',
 
 ]
 
@@ -133,3 +136,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media') # Ini akan membuat folder 'media' di root proyek Anda
+
+EXTERNAL_PROJECT_MENEJ_API_URL = 'https://michaelbriant.pythonanywhere.com/api/proyek/'
+EXTERNAL_PROJECT_ENGINEER_API_URL = 'https://fabyaanusakti.pythonanywhere.com/api/meaningful-data/'

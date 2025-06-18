@@ -1,6 +1,6 @@
 # projek/serializers.py
 from rest_framework import serializers
-from .models import Project, IntelligenceEngineering, ProblemFraming, DatasetRequest, DataProcessing, TrainingModel
+from .models import Project, IntelligenceEngineering, ProblemFraming, DatasetRequest, DataProcessing, TrainingModel, DatasetReply
 from django.contrib.auth.models import User # Untuk serializer user jika diperlukan
 
 
@@ -101,3 +101,24 @@ class TrainingModelSerializer(serializers.ModelSerializer):
         model = TrainingModel
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at', 'training_date']
+
+class DatasetReplySerializer(serializers.ModelSerializer):
+    project_detail = ProjectSerializer(source='project', read_only=True)
+    project = serializers.PrimaryKeyRelatedField(
+        queryset=Project.objects.all(), write_only=True
+    )
+
+    dataset_request_detail = DatasetRequestSerializer(source='dataset_request', read_only=True)
+    dataset_request = serializers.PrimaryKeyRelatedField(
+        queryset=DatasetRequest.objects.all(), write_only=True, required=False, allow_null=True
+    )
+
+    received_by_detail = UserSerializer(source='received_by', read_only=True)
+    received_by = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), source='received_by', write_only=True, required=False, allow_null=True
+    )
+
+    class Meta:
+        model = DatasetReply
+        fields = '__all__' # Expose all fields from the DatasetReply model
+        read_only_fields = ['created_at', 'updated_at'] # These fields are auto-managed by Django

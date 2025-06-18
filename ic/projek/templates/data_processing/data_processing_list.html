@@ -1,80 +1,109 @@
-
 {% extends 'base.html' %}
 {% load static %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 
-<div class="list-container"> 
+<div class="list-container">
     <div class="dashboard-header">
         <h2 class="dashboard-title">{{ page_title }}</h2>
     </div>
 
-    
-
     <div class="dashboard-panel">
 
-        <h3 class="panel-title">Pemrosessan Data</h3>
-        
-        <a href="{% url 'projek:select_project_for_data_processing_view' %}" class="btn btn-success mt-3">Buat Entri Pemrosesan Baru
-        </a>
+        <h3 class="panel-title">Pemrosesan Data</h3>
+
+        <div class="row mb-3 align-items-center"> {# Menggunakan grid Bootstrap untuk search bar dan tombol #}
+            <div class="col-md-7">
+                {# SEARCH BAR AKAN DITEMPATKAN DI SINI (JIKA DIBUTUHKAN) #}
+                {# Contoh search bar (jika Anda ingin menambahkannya kembali): #}
+                <form method="GET" action="{% url 'projek:data_processing_list_view' %}">
+                    <div class="input-group">
+                        <input type="search" class="form-control" placeholder="Cari berdasarkan proyek..." name="q" value="{{ query|default:'' }}">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="submit">Cari</button>
+                            {% if query %}
+                                <a href="{% url 'projek:data_processing_list_view' %}" class="btn btn-outline-danger ml-1">Reset</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-5 text-right">
+                <a href="{% url 'projek:select_project_for_data_processing_view' %}" class="btn btn-success">Buat Entri Pemrosesan Baru</a>
+            </div>
+        </div>
 
         {% if data_processings %}
         <div class="table-responsive">
-            <table class="table table-bordered table-hover intelligence-entry"> 
+            <table class="table table-bordered table-hover intelligence-entry">
                 <thead>
                    <tr>
+                    <th>#</th> {# Nomor Urut #}
                     <th>Proyek</th>
-                    <th>Sumber Data</th>
-                    <th>Langkah Pembersihan Data</th>
-                    <th>Langkah Transformasi Data</th>
-                    <th>Rekayasa Fitur</th>
-                    <th>Metrik Kualitas Data</th>
-                    <th>Lokasi Data yang Diproses</th>
-                    <th>Diproses Oleh</th>
+                    <th>Status Pelatihan</th>
+                    <th>Akurasi</th>
+                    <th>Strategi Penyempurnaan</th>
+                    <th>Status Penyempurnaan</th>
+                    <th>File Data/Model</th> {# Field Baru #}
                     <th>Tanggal Dibuat</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
+                    <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for dp in data_processings %}
                     <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td><a href="{% url 'projek:view_project' dp.project.id %}">{{ dp.project.name }}</a></td>
-                        <td>{{ dp.data_source|truncatechars:70 }}</td>
-                        <td>{{ dp.cleaning_steps|default:"-"|truncatechars:50 }}</td>
-                        <td>{{ dp.transformation_steps|default:"-"|truncatechars:50 }}</td>
-                        <td>{{ dp.feature_engineering|default:"-"|truncatechars:50 }}</td>
-                        <td>{{ dp.data_quality_metrics|default:"-"|truncatechars:50 }}</td>
-                        <td>{{ dp.processed_data_location|default:"-"|truncatechars:50 }}</td>
-                        <td>{{ dp.processed_by.username|default:"N/A" }}</td>
-                        <td>{{ dp.created_at|date:"d M Y, H:i" }}</td>
-                        
                         <td>
-                            <span class="badge 
-                            {% if dp.status == 'Completed' %}bg-success
-                            {% elif dp.status == 'InProgress' %}bg-warning text-dark
-                            {% elif dp.status == 'Failed' %}bg-danger
+                            <span class="badge
+                            {% if dp.training_status == 'completed' %}bg-success
+                            {% elif dp.training_status == 'in_progress' %}bg-warning text-dark
+                            {% elif dp.training_status == 'failed' %}bg-danger
                             {% else %}bg-secondary
                             {% endif %}">
-                            {{ dp.get_status_display }}
-                        </span>
-                    </td>
+                            {{ dp.get_training_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ dp.accuracy|default:"-" }}%</td> {# Menampilkan akurasi #}
+                        <td>{{ dp.refining_strategy|default:"-"|truncatechars:50 }}</td>
+                        <td>
+                             <span class="badge
+                            {% if dp.refining_status == 'completed' %}bg-success
+                            {% elif dp.refining_status == 'in_progress' %}bg-warning text-dark
+                            {% elif dp.refining_status == 'failed' %}bg-danger
+                            {% else %}bg-info {# not_needed status #}
+                            {% endif %}">
+                            {{ dp.get_refining_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if dp.processed_file %}
+                                <a href="{{ dp.processed_file.url }}" target="_blank">Unduh File</a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ dp.created_at|date:"d M Y, H:i" }}</td>
 
-                    <td class="actions text-center">
+                        <td class="actions text-center">
                             <a href="{% url 'projek:edit_data_processing_view' dp.id %}" class="btn btn-sm btn-info">Edit</a>
                             <a href="{% url 'projek:delete_processing_data' dp.id %}" class="btn btn-sm btn-danger">Hapus</a>
-                            <a href="{% url 'projek:view_data_processing_view' dp.id %}" class="btn btn-sm btn-secondary">View</a> 
+                            <a href="{% url 'projek:view_data_processing_view' dp.id %}" class="btn btn-sm btn-secondary">View</a>
                         </td>
-                </tr>
-                {% endfor %}
-            </tbody>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
         {% else %}
         <div class="alert alert-info" role="alert">
-            <i class="fas fa-info-circle"></i> Belum ada entri Problem Framing. Klik tombol "Problem Framing Baru" untuk memulai.
+            <i class="fas fa-info-circle"></i> Belum ada entri Pemrosesan Data. Klik tombol "Buat Entri Pemrosesan Baru" untuk memulai.
+            {% if query %}
+                <p>Tidak ditemukan hasil untuk pencarian "{{ query }}".</p>
+            {% endif %}
         </div>
         {% endif %}
     </div>

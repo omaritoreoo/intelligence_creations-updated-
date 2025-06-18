@@ -4,24 +4,22 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 
 <div class="list-container"> 
     <div class="dashboard-header">
         <h2 class="dashboard-title">{{ page_title }}</h2>
     </div>
 
-    
-
     <div class="dashboard-panel">
 
         <h3 class="panel-title">Daftar Model Training</h3>
         
-        <a href="{% url 'projek:select_project_for_training_model' %}" class="btn btn-success mt-3">Model Training Baru
-        </a>
+        <a href="{% url 'projek:select_project_for_training_model' %}" class="btn btn-success mt-3">Model Training Baru</a>
 
         {% if training_models %}
         <div class="table-responsive">
-            <table class="table table-bordered table-hover intelligence-entry"> {# Menambahkan kelas intelligence-entry agar styling tabel berlaku #}
+            <table class="table table-bordered table-hover intelligence-entry">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -29,16 +27,15 @@
                         <th>Nama Model</th>
                         <th>Tipe Model</th>
                         <th>Algoritma</th>
-                        <th>Hyperparameter</th>
                         <th>Data Latih</th>
-                        <th>Metrik Evaluasi</th>
                         <th>Performa Model</th>
+                        <th>Strategi Refining</th>
+                        <th>Status Refining</th>
                         <th>Dilatih Oleh</th>
                         <th>Tanggal Pelatihan</th>
-                        <th>Path Model Tersimpan</th>
+                        <th>File Model</th>
                         <th>Tanggal Dibuat</th>
                         <th>Terakhir Update</th>
-
                         <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -47,22 +44,40 @@
                     <tr>
                         <td>{{ forloop.counter }}</td>
                         <td>{{ tm.project.name }}</td>
-                        <td>{{ tm.model_name|truncatechars:70 }}</td>
-                        <td>{{ tm.model_type|truncatechars:70 }}</td>
-                        <td>{{ tm.algorithm_used|truncatechars:70 }}</td>
-                        <td>{{ tm.hyperparameters|truncatechars:70 }}</td>
-                        <td>{{ tm.training_data_used|truncatechars:70 }}</td>
-                        <td>{{ tm.evaluation_metrics|truncatechars:70 }}</td>
+                        <td>{{ tm.model_name|truncatechars:30 }}</td>
+                        <td>{{ tm.model_type|capfirst }}</td>
+                        <td>{{ tm.algorithm_used|default:"N/A"|truncatechars:20 }}</td>
+                        <td>{{ tm.training_data_used.project.name|default:"Data Tidak Tersedia" }} - {{ tm.training_data_used.created_at|date:"d M Y" }}</td>
+                        <td>
+                            {% if tm.model_performance %}
+                                Akurasi: **{{ tm.model_performance.accuracy|default:'N/A' }}**
+                                {% if tm.model_performance.f1_score %}<br>F1-Score: {{ tm.model_performance.f1_score }}{% endif %}
+                                {% if tm.refined_performance %}
+                                    <br>Refined Acc: **{{ tm.refined_performance.accuracy|default:'N/A' }}**
+                                {% endif %}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>{{ tm.refining_strategy|default:"-"|truncatechars:30 }}</td>
+                        <td>{{ tm.get_refining_status_display }}</td>
                         <td>{{ tm.trained_by.username|default:"N/A" }}</td>
-                        <td>{{ tm.training_date|date:"d M Y" }}</td>
-                        <td>{{ tm.model_path|truncatechars:70 }}</td>
-
-                        <td>{{ tm.created_at|date:"d M Y" }}</td>
-                        <td>{{ tm.updated_at|date:"d M Y" }}</td>
+                        <td>{{ tm.training_date|date:"d M Y H:i" }}</td>
+                        <td>
+                            {% if tm.model_path %}
+                                {# >>> UBAH BARIS INI <<< #}
+                                <a href="{{ tm.model_path.url }}" target="_blank" download="{{ tm.model_file_name }}" class="btn btn-sm btn-link">Download Model ({{ tm.model_file_name }})</a>
+                                {# >>> AKHIR UBAHAN <<< #}
+                            {% else %}
+                                Belum diunggah
+                            {% endif %}
+                        </td>
+                        <td>{{ tm.created_at|date:"d M Y H:i" }}</td>
+                        <td>{{ tm.updated_at|date:"d M Y H:i" }}</td>
 
                         <td class="actions text-center">
                             <a href="{% url 'projek:edit_training_model' tm.pk %}" class="btn btn-sm btn-info">Edit</a>
-                            <a href="{% url 'projek:delete_training_model' tm.pk %}" class="btn btn-sm btn-danger">Hapus</a>
+                            <a href="{% url 'projek:delete_training_model' tm.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus model training ini?');">Hapus</a>
                             <a href="{% url 'projek:view_training_model' tm.pk %}" class="btn btn-sm btn-secondary">View</a> 
                         </td>
                     </tr>
@@ -72,7 +87,7 @@
         </div>
         {% else %}
         <div class="alert alert-info" role="alert">
-            <i class="fas fa-info-circle"></i> Belum ada entri Problem Framing. Klik tombol "Problem Framing Baru" untuk memulai.
+            <i class="fas fa-info-circle"></i> Belum ada entri Training Models. Klik tombol "Model Training Baru" untuk memulai.
         </div>
         {% endif %}
     </div>

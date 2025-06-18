@@ -1,4 +1,5 @@
 {% load static %}
+{% load widget_tweaks %} {# <-- TAMBAHKAN BARIS INI #}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Intelligence Creations - Register</title>
     <link rel="stylesheet" href="{% static 'css/register.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
@@ -18,10 +20,10 @@
         </div>
         
         <div class="register-form-container">
-            <form method="post" action="{% url 'projek:register' %}">
+            <form method="post" action="{% url 'projek:register' %}" novalidate>
                 {% csrf_token %}
                 
-                {# --- Global Form Errors (non-field errors) --- #}
+                {# --- Global Form Errors (non-field errors from Django) --- #}
                 {% if form.non_field_errors %}
                     <div class="global-errors">
                         <strong>Terjadi kesalahan:</strong>
@@ -33,61 +35,75 @@
                     </div>
                 {% endif %}
 
+                {# --- Global JavaScript Errors --- #}
+                <div id="js-global-errors" class="global-errors" style="display:none;">
+                    <strong>Terjadi kesalahan:</strong>
+                    <ul id="js-error-list"></ul>
+                </div>
+
                 {# --- Username Field --- #}
                 <div class="form-group">
-                    {{ form.username }}
-                    {% if form.username.errors %}
-                        <small class="error-message">
+                    {# UBAH DI SINI: Gunakan render_field dengan placeholder dan class #}
+                    {{ form.username|attr:"placeholder:Username Anda" }}
+                    {# Atau jika Anda ingin lebih banyak kontrol (misalnya class CSS), bisa juga: #}
+                    {# {{ form.username|add_class:"form-control"|attr:"placeholder:Username Anda" }} #}
+                    
+                    <small id="username-error" class="error-message">
+                        {% if form.username.errors %}
                             {% for error in form.username.errors %}
                                 {{ error }}
                             {% endfor %}
-                        </small>
-                    {% endif %}
+                        {% endif %}
+                    </small>
                 </div>
                 
                 {# --- Email Field --- #}
                 {% if form.email %}
                 <div class="form-group">
-                    {{ form.email }}
-                    {% if form.email.errors %}
-                        <small class="error-message">
+                    {# UBAH DI SINI #}
+                    {{ form.email|attr:"placeholder:Email Anda" }}
+                    <small id="email-error" class="error-message">
+                        {% if form.email.errors %}
                             {% for error in form.email.errors %}
                                 {{ error }}
                             {% endfor %}
-                        </small>
-                    {% endif %}
+                        {% endif %}
+                    </small>
                 </div>
                 {% endif %}
                 
                 {# --- Password Field (password1) --- #}
                 <div class="form-group password-group">
-                    {{ form.password1 }}
+                    {# UBAH DI SINI #}
+                    {{ form.password1|attr:"placeholder:Kata Sandi" }}
                     <span class="password-toggle" onclick="togglePassword('id_password1', this)">👁</span>
-                    {% if form.password1.errors %}
-                        <small class="error-message">
+                    <small id="password1-error" class="error-message">
+                        {% if form.password1.errors %}
                             {% for error in form.password1.errors %}
                                 {{ error }}
                             {% endfor %}
-                        </small>
-                    {% endif %}
+                        {% endif %}
+                    </small>
                 </div>
                 
                 {# --- Confirm Password Field (password2) --- #}
                 <div class="form-group password-group">
-                    {{ form.password2 }}
+                    {# UBAH DI SINI #}
+                    {{ form.password2|attr:"placeholder:Konfirmasi Kata Sandi" }}
                     <span class="password-toggle" onclick="togglePassword('id_password2', this)">👁</span>
-                    {% if form.password2.errors %}
-                        <small class="error-message">
+                    <small id="password2-error" class="error-message">
+                        {% if form.password2.errors %}
                             {% for error in form.password2.errors %}
                                 {{ error }}
                             {% endfor %}
-                        </small>
-                    {% endif %}
+                        {% endif %}
+                    </small>
                 </div>
                 
                 <div class="terms-checkbox">
                     <input type="checkbox" id="terms" name="terms" required>
                     <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+                    <small id="terms-error" class="error-message"></small>
                 </div>
                 
                 <div class="button-group">
@@ -95,7 +111,6 @@
                     <a href="{% url 'projek:login' %}" class="btn btn-login">Login</a>
                 </div>
 
-                {# --- Django messages --- #}
                 {% if messages %}
                     <ul class="messages">
                         {% for message in messages %}
@@ -107,83 +122,78 @@
         </div>
     </div>
     
-    <div class="mascot">
-        <div class="mascot-container">
-            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUwIiBoZWlnaHQ9IjM1MCIgdmlld0JveD0iMCA0NSAzNTAgMzUwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDwhLS0gTWFpbiBib2R5IC0tPgogIDxlbGxpcHNlIGN4PSIxNzUiIGN5PSIyMzAiIHJ4PSIxMjAiIHJ5PSIxMDAiIGZpbGw9IiNFQjY1QkYiLz4KICA8ZWxsaXBzZSBjeD0iMTc1IiBjeT0iMjMwIiByeD0iMTAwIiByeT0iODUiIGZpbGw9IiNFQjY1QkYiIGZpbGwtb3BhY2l0eT0iMC43Ii8+CiAgPCEtLSBFYXJzIC0tPgogIDxlbGxpcHNlIGN4PSIxNDAiIGN5PSIxMjAiIHJ4PSIzNSIgcnk9IjUwIiBmaWxsPSIjRUI2NUJGIi8+CiAgPGVsbGlwc2UgY3g9IjIxMCIgY3k9IjEyMCIgcng9IjM1IiByeT0iNTAiIGZpbGw9IiNFQjY1QkYiLz4KICA8ZWxsaXBzZSBjeD0iMTQwIiBjeT0iMTIwIiByeD0iMjAiIHJ5PSIzMCIgZmlsbD0iI0M0NjNBNCIvPgogIDxlbGxpcHNlIGN4PSIyMTAiIGN5PSIxMjAiIHJ4PSIyMCIgcnk9IjMwIiBmaWxsPSIjQzQ2M0E0Ii8+CiAgPCEtLSBNb3V0aCAtLT4KICA8cGF0aCBkPSJNMTQwIDIzMCBDMTQwIDIzMCAxNzUgMjUwIDIxMCAyMzAiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iNCIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPCEtLSBUZWV0aCAtLT4KICA8ZWxsaXBzZSBjeD0iMTYwIiBjeT0iMjQwIiByeD0iNiIgcnk9IjgiIGZpbGw9IndoaXRlIi8+CiAgPGVsbGlwc2UgY3g9IjE5MCIgY3k9IjI0MCIgcng9IjYiIHJ5PSI4IiBmaWxsPSJ3aGl0ZSIvPgogIDwhLS0gQXJtcyAtLT4KICA8ZWxsaXBzZSBjeD0iODUiIGN5PSIyNjAiIHJ4PSIyNSIgcnk9IjQwIiBmaWxsPSIjRUI2NUJGIiB0cmFuc2Zvcm09InJvdGF0ZSgtMzAgODUgMjYwKSIvPgogIDxlbGxpcHNlIGN4PSIyNjUiIGN5PSIyNjAiIHJ4PSIyNSIgcnk9IjQwIiBmaWxsPSIjRUI2NUJGIiB0cmFuc2Zvcm09InJvdGF0ZSgzMCAyNjUgMjYwKSIvPgogIDwhLS0gSGFuZHMgLS0+CiAgPGNpcmNsZSBjeD0iNjUiIGN5PSIyOTUiIHI9IjE1IiBmaWxsPSIjRUI2NUJGIi8+CiAgPGNpcmNsZSBjeD0iMjg1IiBjeT0iMjk1IiByPSIxNSIgZmlsbD0iI0VCNjVCRiIvPgogIDwhLS0gRmluZ2VycyAtLT4KICA8ZWxsaXBzZSBjeD0iNTUiIGN5PSIyODUiIHJ4PSI0IiByeT0iOCIgZmlsbD0iI0VCNjVCRiIvPgogIDxlbGxpcHNlIGN4PSI0OCIgY3k9IjI5NSIgcng9IjQiIHJ5PSI4IiBmaWxsPSIjRUI2NUJGIi8+CiAgPGVsbGlwc2UgY3g9IjU1IiBjeT0iMzA1IiByeD0iNCIgcnk9IjgiIGZpbGw9IiNFQjY1QkYiLz4KICA8ZWxsaXBzZSBjeD0iMjk1IiBjeT0iMjg1IiByeD0iNCIgcnk9IjgiIGZpbGw9IiNFQjY1QkYiLz4KICA8ZWxsaXBzZSBjeD0iMzAyIiBjeT0iMjk1IiByeD0iNCIgcnk9IjgiIGZpbGw9IiNFQjY1QkYiLz4KICA8ZWxsaXBzZSBjeD0iMjk1IiBjeT0iMzA1IiByeD0iNCIgcnk9IjgiIGZpbGw9IiNFQjY1QkYiLz4KICA8IS0tIEJlbGx5IHNwb3RzIC0tPgogIDxjaXJjbGUgY3g9IjE2MCIgY3k9IjI3MCIgcj0iMTgiIGZpbGw9IiNDNDYzQTQiIGZpbGwtb3BhY2l0eT0iMC41Ii8+CiAgPGNpcmNsZSBjeD0iMjAwIiBjeT0iMjgwIiByPSIxMiIgZmlsbD0iI0M0NjNBNCIgZmlsbC1vcGFjaXR5PSIwLjUiLz4KPC9zdmc+" alt="Mascot Character">
-            <div class="interactive-eyes">
-                <div class="interactive-eye">
-                    <div class="interactive-pupil">
-                        <div class="pupil-highlight"></div>
-                    </div>
-                </div>
-                <div class="interactive-eye">
-                    <div class="interactive-pupil">
-                        <div class="pupil-highlight"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
     
     <script>
-        function togglePassword(fieldId, toggle) {
+        // Fungsi untuk menampilkan/menyembunyikan password
+        function togglePassword(fieldId, toggleElement) {
             const passwordField = document.getElementById(fieldId);
             
             if (passwordField.type === 'password') {
                 passwordField.type = 'text';
-                toggle.textContent = '🙈';
+                toggleElement.textContent = '🙈'; // Icon mata tertutup
             } else {
                 passwordField.type = 'password';
-                toggle.textContent = '👁';
+                toggleElement.textContent = '👁'; // Icon mata terbuka
             }
         }
         
-        // Interactive eyes that follow cursor
-        document.addEventListener('mousemove', function(e) {
-            const pupils = document.querySelectorAll('.interactive-pupil');
-            const mascot = document.querySelector('.mascot');
-            
-            if (mascot && pupils.length > 0) {
-                pupils.forEach(pupil => {
-                    const eyeRect = pupil.parentElement.getBoundingClientRect();
-                    const eyeCenterX = eyeRect.left + eyeRect.width / 2;
-                    const eyeCenterY = eyeRect.top + eyeRect.height / 2;
-                    
-                    const angle = Math.atan2(e.clientY - eyeCenterY, e.clientX - eyeCenterX);
-                    const maxDistance = Math.min(eyeRect.width / 4, eyeRect.height / 4); 
-                    const currentDistance = Math.hypot(e.clientX - eyeCenterX, e.clientY - eyeCenterY) / 25; 
-                    const finalDistance = Math.min(maxDistance, currentDistance);
-
-                    const offsetX = Math.cos(angle) * finalDistance;
-                    const offsetY = Math.sin(angle) * finalDistance;
-                    
-                    pupil.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-                });
-            }
-        });
         
-        // Form validation
+        // Validasi Form Sisi Klien
         document.querySelector('form').addEventListener('submit', function(e) {
             const password1Field = document.getElementById('id_password1');
             const password2Field = document.getElementById('id_password2');
-            
-            const password1 = password1Field ? password1Field.value : '';
-            const password2 = password2Field ? password2Field.value : '';
+            const termsCheckbox = document.getElementById('terms');
 
-            const termsChecked = document.getElementById('terms').checked;
-            
-            // Check password match
-            if (password1 !== password2) {
-                e.preventDefault();
-                alert('Password tidak cocok! Mohon ketik ulang password Anda.');
-                return;
+            // Ambil elemen untuk menampilkan pesan error JavaScript
+            const jsGlobalErrorsDiv = document.getElementById('js-global-errors');
+            const jsErrorList = document.getElementById('js-error-list');
+            const usernameErrorSpan = document.getElementById('username-error');
+            // Cek keberadaan emailErrorSpan sebelum diakses
+            const emailErrorSpan = document.getElementById('email-error');
+            const password1ErrorSpan = document.getElementById('password1-error');
+            const password2ErrorSpan = document.getElementById('password2-error');
+            const termsErrorSpan = document.getElementById('terms-error');
+
+            let hasJsErrors = false; // Flag untuk melacak apakah ada error JS
+
+            // Bersihkan pesan error sebelumnya
+            jsErrorList.innerHTML = ''; 
+            usernameErrorSpan.textContent = '';
+            if (emailErrorSpan) emailErrorSpan.textContent = ''; // Bersihkan email error (cek keberadaan)
+            password1ErrorSpan.textContent = '';
+            password2ErrorSpan.textContent = '';
+            termsErrorSpan.textContent = '';
+            jsGlobalErrorsDiv.style.display = 'none'; // Sembunyikan blok global error
+
+            // Validasi kecocokan password
+            if (password1Field && password2Field) { // Pastikan elemen ada
+                const password1 = password1Field.value;
+                const password2 = password2Field.value;
+                if (password1 !== password2) {
+                    password2ErrorSpan.textContent = 'Password tidak cocok!';
+                    const li = document.createElement('li');
+                    li.textContent = 'Password tidak cocok!';
+                    jsErrorList.appendChild(li);
+                    hasJsErrors = true;
+                }
             }
             
-            // Check terms acceptance
-            if (!termsChecked) {
-                e.preventDefault();
-                alert('Anda harus menyetujui Ketentuan Layanan dan Kebijakan Privasi.');
-                return;
+            // Validasi persetujuan syarat & ketentuan
+            if (!termsCheckbox.checked) {
+                termsErrorSpan.textContent = 'Anda harus menyetujui Ketentuan Layanan dan Kebijakan Privasi.';
+                const li = document.createElement('li');
+                li.textContent = 'Anda harus menyetujui Ketentuan Layanan dan Kebijakan Privasi.';
+                jsErrorList.appendChild(li);
+                hasJsErrors = true;
+            }
+
+            // Jika ada error JavaScript, hentikan pengiriman form
+            if (hasJsErrors) {
+                e.preventDefault(); 
+                jsGlobalErrorsDiv.style.display = 'block'; // Tampilkan blok global error
+                // Scroll ke bagian atas form untuk menampilkan pesan error global
+                window.scrollTo({ top: document.querySelector('.container').offsetTop, behavior: 'smooth' });
             }
         });
     </script>
