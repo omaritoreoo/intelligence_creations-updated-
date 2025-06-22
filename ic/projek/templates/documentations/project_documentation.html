@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+{# CSS untuk Cetak #}
+<style media="print">
+    /* Sembunyikan elemen navigasi dan tombol saat dicetak */
+    .sidebar, .navbar, .dashboard-header .actions, .print-button-container {
+        display: none !important;
+    }
+    .list-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        background: none !important;
+    }
+    .dashboard-panel {
+        box-shadow: none !important;
+        border: none !important;
+        background: none !important;
+        padding: 0 !important;
+        margin-bottom: 20px !important;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        color: #000 !important;
+        text-shadow: none !important;
+        margin-top: 15px !important;
+        margin-bottom: 5px !important;
+    }
+    p, dd, li, small {
+        color: #333 !important;
+        font-size: 10pt;
+    }
+    .table-responsive {
+        overflow: visible !important; /* Pastikan tabel tidak terpotong */
+        max-height: none !important;
+        box-shadow: none !important;
+    }
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    .table th, .table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    .status-badge {
+        background-color: #f0f0f0 !important;
+        color: #000 !important;
+        border: 1px solid #ccc;
+    }
+    a {
+        text-decoration: none;
+        color: #000; /* Link tampil hitam */
+    }
+    /* Pastikan gambar profil atau file model yang diunggah terlihat jika relevan */
+    .profile-picture, .model-file-icon {
+        display: inline-block; /* Pastikan icon terlihat */
+    }
+</style>
+
+<div class="dashboard-content-wrapper">
+    <div class="dashboard-header">
+        <h2 class="dashboard-title">{{ page_title }}</h2>
+        <div class="actions print-button-container">
+            <button onclick="window.print()" class="btn btn-primary btn-sm" title="Cetak Dokumen Ini">
+                <i class="fas fa-print"></i> Cetak Dokumen
+            </button>
+            <a href="{% url 'projek:documentations' %}" class="btn btn-secondary btn-sm" title="Kembali ke Pilihan Proyek">
+                <i class="fas fa-arrow-left"></i> Kembali
+            </a>
+        </div>
+    </div>
+
+    <div class="dashboard-panel">
+        <h3 class="panel-title">Ringkasan Proyek</h3>
+        <dl class="row detail-list">
+            <dt class="col-sm-3">Nama Proyek:</dt>
+            <dd class="col-sm-9">{{ project.name }}</dd>
+            <dt class="col-sm-3">Deskripsi:</dt>
+            <dd class="col-sm-9">{{ project.description|linebreaksbr }}</dd>
+            <dt class="col-sm-3">Lokasi:</dt>
+            <dd class="col-sm-9">{{ project.location }}</dd>
+            <dt class="col-sm-3">Tanggal Mulai:</dt>
+            <dd class="col-sm-9">{{ project.start_date|date:"d M Y" }}</dd>
+            <dt class="col-sm-3">Tanggal Selesai:</dt>
+            <dd class="col-sm-9">{{ project.end_date|date:"d M Y" }}</dd>
+            <dt class="col-sm-3">Supervisor:</dt>
+            <dd class="col-sm-9">{{ project.supervisor|default:"-" }}</dd>
+            <dt class="col-sm-3">Status:</dt>
+
+            <dd class="col-sm-9"><span class="status-badge status-{% if project.status == 'Ongoing' %}ongoing {% elif project.status == 'Done' %}completed{% elif project.status == 'Stop' %}cancelled{% elif project.status == 'not_needed' %}secondary{% else %}draft{% endif %}">{{ project.status }}</span></dd>
+        </dl>
+    </div>
+
+    {% if intelligence_engineering %}
+    <div class="dashboard-panel mt-4">
+        <h3 class="panel-title">Detail Rekayasa Kecerdasan (Intelligence Engineering)</h3>
+        <dl class="row detail-list">
+            <dt class="col-sm-4">Tujuan Organisasi:</dt>
+            <dd class="col-sm-8">{{ intelligence_engineering.mo_organizational|linebreaksbr|default:"-" }}</dd>
+            <dt class="col-sm-4">Indikator Utama:</dt>
+            <dd class="col-sm-8">{{ intelligence_engineering.mo_leading_indicators|linebreaksbr|default:"-" }}</dd>
+            <dt class="col-sm-4">Hasil Pengguna:</dt>
+            <dd class="col-sm-8">{{ intelligence_engineering.mo_user_outcomes|linebreaksbr|default:"-" }}</dd>
+            <dt class="col-sm-4">Properti Model:</dt>
+            <dd class="col-sm-8">{{ intelligence_engineering.mo_model_properties|linebreaksbr|default:"-" }}</dd>
+        </dl>
+    </div>
+    {% endif %}
+
+
+    {% if problem_framing %}
+    <div class="dashboard-panel mt-4">
+        <h3 class="panel-title">Problem Framing</h3>
+        <dl class="row detail-list">
+            <dt class="col-sm-3">Deskripsi Masalah:</dt>
+            <dd class="col-sm-9">{{ problem_framing.problem_description|linebreaksbr }}</dd>
+            <dt class="col-sm-3">Target / Tujuan:</dt>
+            <dd class="col-sm-9">{{ problem_framing.target_goal|linebreaksbr }}</dd>
+            <dt class="col-sm-3">Stock (Kondisi Awal):</dt>
+            <dd class="col-sm-9">{{ problem_framing.stock_initial_state|default:"-"|linebreaksbr }}</dd>
+            <dt class="col-sm-3">Input Inflow:</dt>
+            <dd class="col-sm-9">{{ problem_framing.input_inflow_description|default:"-"|linebreaksbr }}</dd>
+            <dt class="col-sm-3">Output Outflow:</dt>
+            <dd class="col-sm-9">{{ problem_framing.output_outflow_description|default:"-"|linebreaksbr }}</dd>
+            <dt class="col-sm-3">Fitur Kunci / Data:</dt>
+            <dd class="col-sm-9">{{ problem_framing.key_features_data|linebreaksbr }}</dd>
+            <dt class="col-sm-3">Di-frame Oleh:</dt>
+            <dd class="col-sm-9">
+                {# PERBAIKAN: Cek jika framed_by ada sebelum mengakses atributnya #}
+                {% if problem_framing.framed_by %}
+                    {{ problem_framing.framed_by.get_full_name|default:problem_framing.framed_by.username }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </dd>
+            <dt class="col-sm-3">Dibuat Pada:</dt>
+            <dd class="col-sm-9">{{ problem_framing.created_at|date:"d M Y H:i" }}</dd>
+        </dl>
+    </div>
+    {% endif %}
+
+    {% if data_processings %}
+    <div class="dashboard-panel mt-4">
+        <h3 class="panel-title">Pemrosesan Data</h3>
+        {% for dp in data_processings %}
+        <h4>{{ forloop.counter }}. Data Processing: {{ dp.data_source_description|truncatechars:50 }}</h4>
+        <dl class="row detail-list ml-3">
+            <dt class="col-sm-4">Deskripsi Sumber Data:</dt>
+            <dd class="col-sm-8">{{ dp.data_source_description|linebreaksbr }}</dd>
+            <dt class="col-sm-4">Ringkasan Langkah Pemrosesan:</dt>
+            <dd class="col-sm-8">{{ dp.processing_steps_summary|default:"-"|linebreaksbr }}</dd>
+            <dt class="col-sm-4">Detail Rekayasa Fitur:</dt>
+            <dd class="col-sm-8">{{ dp.feature_engineering_details|default:"-"|linebreaksbr }}</dd>
+            <dt class="col-sm-4">Lokasi File Diproses:</dt>
+            <dd class="col-sm-8">{{ dp.processed_data_location|default:"-" }}</dd>
+            <dt class="col-sm-4">File Diproses:</dt>
+            <dd class="col-sm-8">
+                {% if dp.processed_file %}
+                    <a href="{{ dp.processed_file.url }}" target="_blank">{{ dp.processed_file.name|cut:"processed_data_files/" }}</a>
+                {% else %}
+                    -
+                {% endif %}
+            </dd>
+            <dt class="col-sm-4">Status:</dt>
+            <dd class="col-sm-8"><span class="status-badge status-{{ dp.status|lower }}">{{ dp.get_status_display }}</span></dd>
+            <dt class="col-sm-4">Diproses Oleh:</dt>
+            <dd class="col-sm-8">
+                {# PERBAIKAN: Cek jika processed_by ada sebelum mengakses atributnya #}
+                {% if dp.processed_by %}
+                    {{ dp.processed_by.get_full_name|default:dp.processed_by.username }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </dd>
+            <dt class="col-sm-4">Dibuat Pada:</dt>
+            <dd class="col-sm-8">{{ dp.created_at|date:"d M Y H:i" }}</dd>
+        </dl>
+        {% if not forloop.last %}<hr class="my-4">{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if training_models %}
+    <div class="dashboard-panel mt-4">
+        <h3 class="panel-title">Pelatihan Model</h3>
+        {% for tm in training_models %}
+        <h4>{{ forloop.counter }}. Model: {{ tm.model_name }}</h4>
+        <dl class="row detail-list ml-3">
+            <dt class="col-sm-4">Nama Model:</dt>
+            <dd class="col-sm-8">{{ tm.model_name }}</dd>
+            <dt class="col-sm-4">Tipe Model:</dt>
+            <dd class="col-sm-8">{{ tm.get_model_type_display }}</dd>
+            <dt class="col-sm-4">Algoritma Digunakan:</dt>
+            <dd class="col-sm-8">{{ tm.algorithm_used|default:"-" }}</dd>
+            <dt class="col-sm-4">Data Pelatihan Digunakan:</dt>
+            <dd class="col-sm-8">
+                {% if tm.training_data_used %}
+                    {{ tm.training_data_used.data_source_description|truncatechars:50 }} (Dibuat: {{ tm.training_data_used.created_at|date:"d M Y" }})
+                {% else %}
+                    -
+                {% endif %}
+            </dd>
+            <dt class="col-sm-4">Performa Model (Awal):</dt>
+            <dd class="col-sm-8">
+                {% if tm.model_performance %}
+                    <ul>
+                        {% for key, value in tm.model_performance.items %}
+                            <li><strong>{{ key|title }}:</strong> {{ value|floatformat:4 }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    -
+                {% endif %}
+            </dd>
+            <dt class="col-sm-4">File Model:</dt>
+            <dd class="col-sm-8">
+                {% if tm.model_path %}
+                    <a href="{{ tm.model_path.url }}" target="_blank">{{ tm.model_file_name }}</a>
+                {% else %}
+                    -
+                {% endif %}
+            </dd>
+            <dt class="col-sm-4">Strategi Penyempurnaan:</dt>
+            <dd class="col-sm-8">{{ tm.refining_strategy|default:"-"|linebreaksbr }}</dd>
+            <dt class="col-sm-4">Status Penyempurnaan:</dt>
+            <dd class="col-sm-8"><span class="status-badge status-{{ tm.refining_status|lower }}">{{ tm.get_refining_status_display }}</span></dd>
+            <dt class="col-sm-4">Performa Setelah Penyempurnaan:</dt>
+            <dd class="col-sm-8">
+                {% if tm.refined_performance %}
+                    <ul>
+                        {% for key, value in tm.refined_performance.items %}
+                            <li><strong>{{ key|title }}:</strong> {{ value|floatformat:4 }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    -
+                {% endif %}
+            </dd>
+            <dt class="col-sm-4">Dilatih Oleh:</dt>
+            <dd class="col-sm-8">
+                {# PERBAIKAN: Cek jika trained_by ada sebelum mengakses atributnya #}
+                {% if tm.trained_by %}
+                    {{ tm.trained_by.get_full_name|default:tm.trained_by.username }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </dd>
+            <dt class="col-sm-4">Tanggal Pelatihan:</dt>
+            <dd class="col-sm-8">{{ tm.training_date|date:"d M Y H:i" }}</dd>
+        </dl>
+        {% if not forloop.last %}<hr class="my-4">{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if dataset_replies %}
+    <div class="dashboard-panel mt-4">
+        <h3 class="panel-title">Balasan Dataset</h3>
+        {% for dr in dataset_replies %}
+        <h4>{{ forloop.counter }}. Balasan dari: {{ dr.project.name|default:"N/A" }}</h4>
+        <dl class="row detail-list ml-3">
+            <dt class="col-sm-4">Pesan Balasan:</dt>
+            <dd class="col-sm-8">{{ dr.message|linebreaksbr }}</dd>
+            <dt class="col-sm-4">Email Pengirim Asli:</dt>
+            <dd class="col-sm-8">{{ dr.original_sender_email|default:"-" }}</dd>
+            <dt class="col-sm-4">Waktu Diterima:</dt>
+            <dd class="col-sm-8">{{ dr.created_at|date:"d M Y H:i" }}</dd>
+            <dt class="col-sm-4">ID Balasan Eksternal:</dt>
+            <dd class="col-sm-8">{{ dr.external_reply_id|default:"-" }}</dd>
+        </dl>
+        {% if not forloop.last %}<hr class="my-4">{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if documents %}
+    <div class="dashboard-panel mt-4">
+        <h3 class="panel-title">Dokumen Terkait</h3>
+        {% for doc in documents %}
+        <h4>{{ forloop.counter }}. Dokumen: {{ doc.title }}</h4>
+        <dl class="row detail-list ml-3">
+            <dt class="col-sm-4">Judul:</dt>
+            <dd class="col-sm-8">{{ doc.title }}</dd>
+            <dt class="col-sm-4">Deskripsi:</dt>
+            <dd class="col-sm-8">{{ doc.description|default:"-"|linebreaksbr }}</dd>
+            <dt class="col-sm-4">Tipe Dokumen:</dt>
+            <dd class="col-sm-8">{{ doc.get_document_type_display }}</dd>
+            <dt class="col-sm-4">File:</dt>
+            <dd class="col-sm-8">
+                {% if doc.file %}
+                    <a href="{{ doc.file.url }}" target="_blank">{{ doc.file.name|cut:"project_documents/" }}</a>
+                {% else %}
+                    -
+                {% endif %}
+            </dd>
+            <dt class="col-sm-4">Diunggah Oleh:</dt>
+            <dd class="col-sm-8">
+                {% if doc.uploaded_by %}
+                    {{ doc.uploaded_by.get_full_name|default:doc.uploaded_by.username }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </dd>
+            <dt class="col-sm-4">Dibuat Pada:</dt>
+            <dd class="col-sm-8">{{ doc.created_at|date:"d M Y H:i" }}</dd>
+        </dl>
+        {% if not forloop.last %}<hr class="my-4">{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not problem_framing and not data_processings and not training_models and not dataset_replies and not documents and not intelligence_engineering %}
+    <div class="dashboard-panel mt-4">
+        <div class="alert alert-warning" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> Tidak ada data Problem Framing, Pemrosesan Data, Pelatihan Model, Balasan Dataset, Intelligence Engineering atau Dokumen yang ditemukan untuk proyek ini.
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

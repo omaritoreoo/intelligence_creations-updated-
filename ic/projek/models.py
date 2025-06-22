@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.conf import settings 
+from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import os
@@ -26,9 +26,8 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
-    
-class Project(models.Model):
 
+class Project(models.Model):
     external_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
 
     STATUS_CHOICES = [
@@ -56,14 +55,8 @@ class Project(models.Model):
         verbose_name_plural = "Proyek"
 
 class IntelligenceEngineering(models.Model):
-    # This links the IE entry to a specific Project object in your local DB.
-    # The 'project' field here IS the connection to the Project model.
     project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name='intelligence_engineering')
 
-    # This 'external_id_ie' field will store the 'id_proyek' from the IE API.
-    # Since 'id_proyek' from IE API corresponds to 'external_id' of a Project,
-    # this field acts as a *redundant but useful* unique identifier specific to the IE entry itself.
-    # It allows you to use update_or_create on IntelligenceEngineering using its own unique external ID.
     external_id_ie = models.CharField(max_length=255, unique=True, null=True, blank=True)
 
     # Meaningful Objectives (from "meaningful_objectives" in JSON)
@@ -71,31 +64,6 @@ class IntelligenceEngineering(models.Model):
     mo_leading_indicators = models.TextField(blank=True, null=True)
     mo_user_outcomes = models.TextField(blank=True, null=True)
     mo_model_properties = models.TextField(blank=True, null=True)
-
-    # Intelligence Experience (from "intelligence_experience" in JSON)
-    ie_automate = models.TextField(blank=True, null=True)
-    ie_prompt = models.TextField(blank=True, null=True)
-    ie_annotate = models.TextField(blank=True, null=True)
-    ie_organization = models.TextField(blank=True, null=True)
-    ie_system_objectives = models.TextField(blank=True, null=True)
-    ie_minimize_flaws = models.TextField(blank=True, null=True)
-    ie_create_data = models.TextField(blank=True, null=True)
-
-    # Intelligence Implementation (from "intelligence_implementation" in JSON)
-    ii_business_process = models.TextField(blank=True, null=True)
-    ii_technology = models.TextField(blank=True, null=True)
-    ii_build_process = models.TextField(blank=True, null=True)
-
-    # Batasan Pengembangan (from "batasan_pengembangan" in JSON)
-    bd_limitation = models.TextField(blank=True, null=True)
-
-    # Status Realisasi (from "status_realisasi" in JSON)
-    sr_realization = models.TextField(blank=True, null=True)
-
-    # Perencanaan (from "perencanaan" in JSON)
-    pr_deployment = models.TextField(blank=True, null=True)
-    pr_maintenance = models.TextField(blank=True, null=True)
-    pr_operating = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -158,14 +126,14 @@ class DatasetRequest(models.Model):
     target_for_dataset = models.TextField(verbose_name="Target / Tujuan (Penggunaan Dataset)", help_text="Untuk tujuan apa dataset ini akan digunakan?")
     type_data_needed = models.CharField(max_length=100, verbose_name="Tipe Data yang Dibutuhkan", help_text="Contoh: Data Transaksi, Data Sensor, Data Pelanggan, dll.")
     data_processing_activity = models.TextField(verbose_name="Aktivitas Pemrosesan Data yang Diinginkan", help_text="Deskripsikan pemrosesan awal yang dibutuhkan (misal: filtering, aggregation, anonymization).")
-    
+
     num_features = models.IntegerField(blank=True, null=True, verbose_name="Estimasi Jumlah Fitur", help_text="Estimasi kolom data yang dibutuhkan.")
     dataset_size = models.CharField(max_length=100, blank=True, null=True, verbose_name="Estimasi Ukuran Dataset", help_text="Contoh: 100GB, 1 Juta Baris, dll.")
     file_format = models.CharField(max_length=50, choices=FORMAT_CHOICES, verbose_name="Format File yang Diinginkan")
-    
+
     start_date_needed = models.DateField(verbose_name="Tanggal Mulai Dibutuhkan")
     end_date_needed = models.DateField(verbose_name="Tanggal Selesai Dibutuhkan", blank=True, null=True, help_text="Tanggal batas akhir data yang dibutuhkan (jika historis).")
-    
+
     # Status dan Audit
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending', verbose_name="Status Permintaan")
     requested_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='requested_datasets', verbose_name="Diminta Oleh")
@@ -181,24 +149,31 @@ class DatasetRequest(models.Model):
         ordering = ['-created_at']
 
 class DatasetReply(models.Model):
+    external_reply_id = models.CharField(max_length=255, unique=True, null=True, blank=True, verbose_name="ID Balasan Eksternal")
     project = models.ForeignKey(
         Project,
-        on_delete=models.CASCADE, # If the project is deleted, delete its replies
+        on_delete=models.CASCADE,
         related_name='dataset_replies',
         verbose_name="Proyek Terkait"
     )
 
     dataset_request = models.ForeignKey(
-        DatasetRequest, # Direct reference, as DatasetRequest is defined above
-        on_delete=models.SET_NULL, # Don't delete reply if request is deleted
+        DatasetRequest,
+        on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='replies',
         verbose_name="Permintaan Dataset Terkait"
     )
 
-    # The actual message from the external system.
     message = models.TextField(verbose_name="Pesan Balasan")
+    original_sender_email = models.EmailField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Pengirim Asli (Eksternal)"
+    )
 
+    dataset_link = models.URLField(verbose_name="URL")
     original_sender_email = models.EmailField(
         max_length=255,
         blank=True,
@@ -212,12 +187,13 @@ class DatasetReply(models.Model):
     class Meta:
         verbose_name = "Balasan Dataset"
         verbose_name_plural = "Balasan Dataset"
-        # Order by creation date, newest first, for easier tracking
+        # Urutkan berdasarkan waktu pembuatan, yang terbaru di atas.
         ordering = ['-created_at']
 
     def __str__(self):
-        # A human-readable representation of the reply
-        return f"Balasan Dataset untuk '{self.project.name}' ({self.created_at.strftime('%Y-%m-%d %H:%M')})"
+        # Representasi yang mudah dibaca.
+        return f"Balasan Dataset untuk '{self.project.name}' (ID Eksternal: {self.external_reply_id or 'N/A'})"
+
 
 # Data Processing Model
 class DataProcessing(models.Model):
@@ -317,7 +293,7 @@ class TrainingModel(models.Model):
         related_name='training_models',
         verbose_name="Proyek Terkait"
     )
-    
+
     model_name = models.CharField(
         max_length=100,
         verbose_name="Nama Model"
@@ -343,11 +319,11 @@ class TrainingModel(models.Model):
         related_name='models_trained_with',
         verbose_name="Data Pelatihan Digunakan"
     )
-    
+
     # Performa Model, termasuk Akurasi. Gunakan JSONField untuk fleksibilitas metrik lain.
     model_performance = models.JSONField(
         verbose_name="Performa Model",
-        help_text="Metrik utama performa model (misal: {'accuracy': 0.89, 'f1_score': 0.85})"
+        help_text="(contoh: {'akurasi': 0.89, 'f1_score': 0.85})"
     )
 
     # Lokasi penyimpanan file model yang terlatih
@@ -358,7 +334,7 @@ class TrainingModel(models.Model):
         verbose_name="Lokasi File Model",
         help_text="Unggah file model yang sudah terlatih (misal: .pkl, .h5, .pt)."
     )
-    
+
     # Field untuk Penyempurnaan (Refining) Model
     refining_strategy = models.TextField(
         verbose_name="Strategi Penyempurnaan Model",
@@ -372,13 +348,6 @@ class TrainingModel(models.Model):
         default='not_needed',
         verbose_name="Status Penyempurnaan"
     )
-    # Performa setelah penyempurnaan, jika ada dan berbeda
-    refined_performance = models.JSONField(
-        verbose_name="Performa Setelah Penyempurnaan",
-        help_text="Metrik performa model setelah penyempurnaan, jika ada.",
-        blank=True,
-        null=True
-    )
 
     trained_by = models.ForeignKey(
         User,
@@ -388,14 +357,14 @@ class TrainingModel(models.Model):
         verbose_name="Dilatih Oleh"
     )
     training_date = models.DateTimeField(auto_now_add=True, verbose_name="Tanggal Pelatihan")
-    
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
 
     def __str__(self):
         return f"Model: {self.model_name} ({self.project.name})"
-    
+
     @property
     def model_file_name(self):
         """Mengembalikan hanya nama file dari path model_path."""
@@ -406,3 +375,46 @@ class TrainingModel(models.Model):
     class Meta:
         verbose_name = "Pelatihan Model"
         verbose_name_plural = "Pelatihan Model"
+
+class Document(models.Model):
+    DOCUMENT_TYPE_CHOICES = [
+        ('technical', 'Dokumen Teknis'),
+        ('report', 'Laporan'),
+        ('other', 'Lain-lain'),
+    ]
+
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name='documents',
+        verbose_name="Proyek Terkait"
+    )
+    title = models.CharField(max_length=255, verbose_name="Judul Dokumen")
+    description = models.TextField(blank=True, null=True, verbose_name="Deskripsi")
+    file = models.FileField(
+        upload_to='project_documents/', # Folder untuk menyimpan file
+        verbose_name="File Dokumen"
+    )
+    document_type = models.CharField(
+        max_length=50,
+        choices=DOCUMENT_TYPE_CHOICES,
+        default='other',
+        verbose_name="Tipe Dokumen"
+    )
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='uploaded_documents',
+        verbose_name="Diunggah Oleh"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.project.name})"
+
+    class Meta:
+        verbose_name = "Dokumen Proyek"
+        verbose_name_plural = "Dokumen Proyek"
+        ordering = ['-created_at']

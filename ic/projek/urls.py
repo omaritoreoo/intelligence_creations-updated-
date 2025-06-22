@@ -19,7 +19,7 @@ urlpatterns = [
     path('projek/<int:project_id>/delete/', views.delete_project_view, name='delete_project'),
 
     #-- URL ENGIINERRING --#
-    path('projects/<int:project_id>/ie/detail/', views.intelligence_engineering_detail, name='intelligence_engineering_detail'),
+    path('intelligence-engineering/<int:project_id>/detail/', views.intelligence_engineering_detail, name='intelligence_engineering_detail'),
 
      # --- URL Problem Framing ---
     path('problem-framing/select-project/', views.select_problem_framings, name='select_project_for_framing'), # Pilih proyek untuk PF
@@ -34,10 +34,6 @@ urlpatterns = [
     path('dataset-request/create/<int:project_id>/', views.create_dataset_request_view, name='create_dataset_request'),
     path('dataset-request/list/', views.dataset_request_list_view, name='dataset_request_list'),
     path('dataset-request/<int:request_id>/delete/', views.delete_request_dataset, name='delete_request_dataset'),
-
-    #--api-- datasets
-    path('dataset-request/api/<int:projek_id>/', views.get_request_data_api, name='get_request_data_api'),
-    path('problem-framing/api<int:pk>/',views.problem_framing_api, name="get_problem_framing_api"),
 
     # -- URL: Datasets
     path('datasets', views.datasets, name='datasets'),
@@ -62,4 +58,7 @@ urlpatterns = [
 
     # --- URL : Dokumentasi ---
     path('documentations/', views.documentations, name='documentations'),
+    path('documentation/view/<int:project_id>/', views.generate_project_documentation_view, name='generate_project_documentation'),
+
+    path('api-content-settings/', views.api_content_settings_view, name='api_content_settings'),
 ]

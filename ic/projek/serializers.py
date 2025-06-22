@@ -1,8 +1,7 @@
 # projek/serializers.py
 from rest_framework import serializers
-from .models import Project, IntelligenceEngineering, ProblemFraming, DatasetRequest, DataProcessing, TrainingModel, DatasetReply
+from .models import Project, ProblemFraming, DatasetRequest, DataProcessing, TrainingModel, DatasetReply
 from django.contrib.auth.models import User # Untuk serializer user jika diperlukan
-
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,17 +22,11 @@ class ProjectSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at']
 
 
-class IntelligenceEngineeringSerializer(serializers.ModelSerializer):
-    project_detail = ProjectSerializer(source='project', read_only=True) # Untuk menampilkan detail project terkait
-    project = serializers.PrimaryKeyRelatedField(
-        queryset=Project.objects.all(), write_only=True
-    ) # Untuk menerima project_id saat create/update
-
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = IntelligenceEngineering
-        fields = '__all__'
-        read_only_fields = ['created_at', 'updated_at']
-
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'email']
+        read_only_fields = ['username'] # Biasanya username tidak bisa diubah lewat API ini
 
 class ProblemFramingSerializer(serializers.ModelSerializer):
     project_detail = ProjectSerializer(source='project', read_only=True)
@@ -122,3 +115,16 @@ class DatasetReplySerializer(serializers.ModelSerializer):
         model = DatasetReply
         fields = '__all__' # Expose all fields from the DatasetReply model
         read_only_fields = ['created_at', 'updated_at'] # These fields are auto-managed by Django
+
+
+# --- UPDATED: Serializer untuk Status Proyek ---
+class ProjectStatusSerializer(serializers.ModelSerializer):
+    nama_proyek = serializers.CharField(source='name', read_only=True)
+    status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Project
+        fields = ['external_id', 'nama_proyek', 'status']
+
+    def get_status(self, obj):
+        return obj.get_status_display()

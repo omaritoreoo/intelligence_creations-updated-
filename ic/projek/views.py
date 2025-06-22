@@ -3,19 +3,21 @@ from django.contrib.auth import authenticate, logout, login as auth_login
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import ProfileForm, ProjectForm, ProblemFramingForm, DatasetRequestForm, UserUpdateForm, IntelligenceEngineeringForm, DataProcessingForm, TrainingModelForm, IntelligenceEngineering
 from django.contrib import messages
+from django.conf import settings
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 import requests # Import library requests
 import logging # Untuk logging error
-from django.conf import settings # Import settings
 from datetime import datetime # Import datetime untuk penanganan tanggal
+from django.db.models import Count # Import Count untuk agregasi
+
 
 from .utils import sync_projects_from_external_api, \
                    sync_intelligence_engineering_from_external_api
 logger = logging.getLogger(__name__)
 
-from .models import Project, ProblemFraming, DatasetRequest, Profile, IntelligenceEngineering, TrainingModel, DataProcessing
- 
+from .models import Project, ProblemFraming, DatasetRequest, Profile, TrainingModel, DataProcessing, DatasetReply, Document
+
 # Create your views here.
 def landing_page(request):
     if request.user.is_authenticated:
@@ -40,7 +42,7 @@ def login(request):
             messages.error(request, 'Username atau password tidak valid.')
     else:
         form = AuthenticationForm()
-    
+
     return render(request, 'login_pages/login.html', {'form': form})
 
 # register
@@ -48,7 +50,7 @@ def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save() 
+            user = form.save()
             form.save()
             auth_login(request, user)
             messages.success(request, 'Pendaftaran berhasil! Anda sekarang masuk.')
@@ -113,21 +115,52 @@ def profile_update_view(request):
 def dashboard(request):
     if request.method == 'POST':
         if 'sync_projects' in request.POST:
-            # Panggil fungsi dan biarkan dia sendiri yang menangani messages
-            sync_projects_from_external_api(request) 
+            sync_projects_from_external_api(request)
         elif 'sync_intelligence_engineering' in request.POST:
-            # Panggil fungsi dan biarkan dia sendiri yang menangani messages
             sync_intelligence_engineering_from_external_api(request)
-        
+
         return redirect('projek:dashboard') # Redirect kembali ke dashboard setelah sinkronisasi
 
     projects = Project.objects.all().order_by('-created_at')
-    intelligence_engineerings = IntelligenceEngineering.objects.all().order_by('-created_at')
+    intelligence_engineerings = IntelligenceEngineering.objects.filter(project__in=projects).order_by('-created_at')
+
+    # --- Data untuk Statistik Dashboard ---
+
+    # 1. Statistik Proyek (berdasarkan Status)
+    project_status_counts_raw = Project.objects.values('status').annotate(count=Count('status'))
+    project_status_labels = []
+    project_status_data = []
+
+    # Mapping status value to its display name for chart labels
+    status_display_map = dict(Project.STATUS_CHOICES)
+
+    for item in project_status_counts_raw:
+        display_name = status_display_map.get(item['status'], item['status']) # Get display name, fallback to raw if not found
+        project_status_labels.append(display_name)
+        project_status_data.append(item['count'])
+
+    # 2. Total Entri Rekayasa Kecerdasan
+    total_ie_entries = IntelligenceEngineering.objects.count()
+
+    # 3. Total Balasan Dataset
+    total_dataset_replies = DatasetReply.objects.count()
+
+    # 4. Total Model Pelatihan
+    total_training_models = TrainingModel.objects.count()
+
+    chart_data = {
+        'projectStatusLabels': project_status_labels,
+        'projectStatusData': project_status_data,
+        'totalIeEntries': total_ie_entries,
+        'totalDatasetReplies': total_dataset_replies,
+        'totalTrainingModels': total_training_models,
+    }
 
     context = {
         'page_title': 'Dashboard Utama',
         'projects': projects,
         'intelligence_engineerings': intelligence_engineerings,
+        'chart_data': chart_data, # Tambahkan data statistik ke konteks
     }
     return render(request, 'dashboard/dashboard.html', context)
 
@@ -214,25 +247,21 @@ def delete_project_view(request, project_id):
 
 
 #integrasi intelligence engiinering :
-
-# --- BARU/DIUBAH: VIEW DETAIL UNTUK INTELLIGENCE ENGINEERING ---
 @login_required
-def intelligence_engineering_detail(request, project_id): # Menggunakan project_id karena IE terhubung OneToOne ke Project
+def intelligence_engineering_detail(request, project_id):
     project = get_object_or_404(Project, id=project_id)
-    
-    try:
-        ie_instance = project.intelligence_engineering
-    except IntelligenceEngineering.DoesNotExist:
-        ie_instance = None # Tidak ada IE terkait untuk proyek ini
-        messages.warning(request, f"Tidak ada data Rekayasa Kecerdasan untuk proyek '{project.name}'.")
-    
-    context = {
-        'page_title': f'Detail Rekayasa Kecerdasan untuk {project.name}',
-        'project': project,
-        'ie_instance': ie_instance, # Objek IE yang akan ditampilkan
-    }
-    return render(request, 'projek/intelligence_engineering_detail.html', context)
 
+    try:
+        ie_instance = IntelligenceEngineering.objects.get(project=project)
+    except IntelligenceEngineering.DoesNotExist:
+        ie_instance = None
+
+    context = {
+        'project': project,
+        'ie_instance': ie_instance,
+        'page_title': f"Detail Rekayasa Kecerdasan: {project.name}"
+    }
+    return render(request, 'intelligence_engineering/intelligence_engineering_detail.html', context)
 
 
 ## Problem Framing (CRUD Problem Framing)
@@ -248,36 +277,30 @@ def select_problem_framings(request):
 @login_required
 def create_problem_framing_view(request, project_id):
     project = get_object_or_404(Project, id=project_id)
-    # Periksa apakah proyek ini sudah memiliki Problem Framing
+
     if hasattr(project, 'problem_framing') and project.problem_framing:
         messages.warning(request, f"Proyek '{project.name}' sudah memiliki entri Problem Framing. Silakan edit jika perlu.")
-        return redirect('projek:edit_problem_framing', pk=project.problem_framing.pk) # Arahkan ke edit dengan ID ProblemFraming
-    
-    intelligence_engineering_instance = None
-    meaningful_objectives = None
+        return redirect('projek:edit_problem_framing', pk=project.problem_framing.pk)
+
+    intelligence_engineering_form = None # Ini akan menyimpan instance formulir read-only
 
     try:
-        meaningful_objectives = {
-            'organizational': intelligence_engineering_instance.mo_organizational,
-            'leading_indicators': intelligence_engineering_instance.mo_leading_indicators,
-            'user_outcomes': intelligence_engineering_instance.mo_user_outcomes,
-            'model_properties': intelligence_engineering_instance.mo_model_properties,
-        }
-        messages.info(request, "Data Intelligence Engineering berhasil diambil dari database lokal.")
+        intelligence_engineering_instance = IntelligenceEngineering.objects.get(project=project)
+        # Buat instance formulir view-only, diisi dengan data dari instance IE
+        intelligence_engineering_form = IntelligenceEngineeringForm(instance=intelligence_engineering_instance)
+        messages.info(request, "Data Rekayasa Kecerdasan (Intelligence Engineering) berhasil diambil dari database lokal.")
     except IntelligenceEngineering.DoesNotExist:
         messages.warning(request, f"Belum ada data Rekayasa Kecerdasan (Intelligence Engineering) untuk proyek '{project.name}'.")
     except Exception as e:
-        messages.error(request, f"Terjadi kesalahan saat mengambil data Intelligence Engineering: {e}")
+        messages.error(request, f"Terjadi kesalahan tak terduga saat mengambil data Rekayasa Kecerdasan: {e}")
+        logger.error(f"Error fetching IE instance for project {project.id}: {e}", exc_info=True)
 
-        import logging
-        logging.getLogger(__name__).error(f"Error fetching IE instance for project {project.id}: {e}", exc_info=True)
-    
     if request.method == 'POST':
         form = ProblemFramingForm(request.POST)
         if form.is_valid():
             problem_framing = form.save(commit=False)
-            problem_framing.project = project # Kaitkan dengan proyek yang dipilih
-            problem_framing.framed_by = request.user # User yang membuat framing
+            problem_framing.project = project
+            problem_framing.framed_by = request.user
             problem_framing.save()
             messages.success(request, f"Problem Framing untuk proyek '{project.name}' berhasil disimpan!")
             return redirect('projek:problem_framing_list')
@@ -287,13 +310,17 @@ def create_problem_framing_view(request, project_id):
         initial_data = {
             'problem_description': f"Masalah terkait proyek: '{project.name}'. ({project.description})",
         }
+        # Jika Anda ingin mengisi field ProblemFraming dari data IE, lakukan di sini
+        # if intelligence_engineering_form and intelligence_engineering_form.instance:
+        #     initial_data['some_problem_field'] = intelligence_engineering_form.instance.mo_organizational
+
         form = ProblemFramingForm(initial=initial_data)
 
     context = {
-        'form': form,
+        'form': form, # Ini adalah ProblemFramingForm yang bisa diedit
         'project': project,
         'page_title': f"Problem Framing untuk Proyek: {project.name}",
-        'meaningful_objectives': meaningful_objectives,
+        'intelligence_engineering_form': intelligence_engineering_form, # <-- Lewatkan form read-only ini ke template
     }
     return render(request, 'problem_framing/create_problem_framing.html', context)
 
@@ -322,10 +349,21 @@ def problem_framing_list_view(request):
     return render(request, 'problem_framing/problem_framing_list.html', context)
 
 @login_required
-# Menerima PK dari ProblemFraming, bukan Project ID
-def edit_problem_framing_view(request, pk): 
+def edit_problem_framing_view(request, pk):
     problem_framing = get_object_or_404(ProblemFraming, pk=pk) # Ambil ProblemFraming berdasarkan PK-nya
     project = problem_framing.project # Ambil proyek terkait dari ProblemFraming
+
+    intelligence_engineering_form = None # Inisialisasi awal
+
+    try:
+        intelligence_engineering_instance = IntelligenceEngineering.objects.get(project=project)
+        intelligence_engineering_form = IntelligenceEngineeringForm(instance=intelligence_engineering_instance)
+        messages.info(request, "Data Rekayasa Kecerdasan (Intelligence Engineering) berhasil diambil dari database lokal.")
+    except IntelligenceEngineering.DoesNotExist:
+        messages.warning(request, f"Belum ada data Rekayasa Kecerdasan (Intelligence Engineering) untuk proyek '{project.name}'.")
+    except Exception as e:
+        messages.error(request, f"Terjadi kesalahan tak terduga saat mengambil data Rekayasa Kecerdasan: {e}")
+        logger.error(f"Error fetching IE instance for project {project.id}: {e}", exc_info=True)
 
     if request.method == 'POST':
         form = ProblemFramingForm(request.POST, instance=problem_framing)
@@ -339,15 +377,16 @@ def edit_problem_framing_view(request, pk):
         form = ProblemFramingForm(instance=problem_framing)
 
     context = {
-        'form': form,
+        'form': form, # Ini adalah ProblemFramingForm yang bisa diedit
         'project': project, # Kirim objek proyek ke template jika diperlukan
-        'page_title': f"Edit Problem Framing: {project.name}"
+        'page_title': f"Edit Problem Framing: {project.name}",
+        'intelligence_engineering_form': intelligence_engineering_form, # <-- Lewatkan form read-only ini ke template
     }
     return render(request, 'problem_framing/create_problem_framing.html', context)
 
 @login_required
 # Menerima PK dari ProblemFraming, bukan Project ID
-def delete_problem_framing_view(request, pk): 
+def delete_problem_framing_view(request, pk):
     problem_framing = get_object_or_404(ProblemFraming, pk=pk) # Ambil ProblemFraming berdasarkan PK-nya
     project = problem_framing.project # Ambil proyek terkait dari ProblemFraming
 
@@ -365,41 +404,34 @@ def delete_problem_framing_view(request, pk):
         return render(request, 'problem_framing/confirm_delete_problem_framing.html', context)
 
 @login_required
-# Menerima PK dari ProblemFraming, bukan Project ID
-def problem_framing_detail_view(request, pk): 
-    problem_framing = get_object_or_404(ProblemFraming, pk=pk) # Ambil ProblemFraming berdasarkan PK-nya
+def problem_framing_detail_view(request, pk):
+    problem_framing = get_object_or_404(ProblemFraming, pk=pk)
+    project = problem_framing.project
+
+    intelligence_engineering_form = None # Inisialisasi awal
+
+    try:
+        intelligence_engineering_instance = IntelligenceEngineering.objects.get(project=project)
+
+        # --- PERBAIKAN UTAMA DI SINI ---
+        # Gunakan nama kelas, bukan nama variabel yang sedang diinisialisasi
+        intelligence_engineering_form = IntelligenceEngineeringForm(instance=intelligence_engineering_instance)
+
+        messages.info(request, "Data Rekayasa Kecerdasan (Intelligence Engineering) berhasil diambil.")
+    except IntelligenceEngineering.DoesNotExist:
+        messages.warning(request, f"Belum ada data Rekayasa Kecerdasan (Intelligence Engineering) untuk proyek '{project.name}'.")
+        logger.warning(f"IE data not found for project ID {project.id} ({project.name}) when viewing Problem Framing detail.")
+    except Exception as e:
+        messages.error(request, f"Terjadi kesalahan tak terduga saat mengambil data Rekayasa Kecerdasan: {e}. Cek log server.")
+        logger.error(f"Error fetching IE instance or creating IE form for project {project.id}: {e}", exc_info=True)
+
     context = {
         'problem_framing': problem_framing,
-        'page_title': f"Detail Problem Framing: {problem_framing.project.name}" # Perbaikan judul
+        'project': project,
+        'intelligence_engineering_form': intelligence_engineering_form,
+        'page_title': f"Detail Problem Framing: {problem_framing.project.name}"
     }
     return render(request, 'problem_framing/problem_framing_detail.html', context)
-
-# API PROBLEM FRAMING
-#--data request APIS
-def problem_framing_api(request, pk):
-    try:
-        projek = ProblemFraming.objects.get(pk=pk)
-        data = {
-            'Proyek Terkait': projek.project,
-            'Deskripsi Masalah': projek.problem_description,
-            'Target / Tujuan (Goal)': projek.target_goal,
-            'Stock (Kondisi/Ketersediaan Awal)': projek.stock_initial_state,
-            'Input Inflow': projek.input_inflow_description,
-            'Output Outflow': projek.output_outflow_description,
-            'Fitur Kunci / Data yang Diperlukan': projek.key_features_data,
-            'Di-frame oleh': projek.framed_by,
-
-            
-            'start_date_needed': projek.created_at.strftime('%Y-%m-%d'),
-            'updated_at': projek.updated_at.strftime('%Y-%m-%d'),
-        }
-        return JsonResponse(data)
-    except DatasetRequest.DoesNotExist:
-        return JsonResponse({'error': 'Problem Framing Datas not found'}, status=404)
-
-
-
-
 #---REQUEST DATASETS----
 
 @login_required
@@ -419,18 +451,19 @@ def create_dataset_request_view(request, project_id):
         form = DatasetRequestForm(request.POST)
         if form.is_valid():
             dataset_request = form.save(commit=False)
-            dataset_request.project = project # Kaitkan dengan proyek
-            dataset_request.requested_by = request.user # User yang membuat permintaan
+            dataset_request.project = project
+            dataset_request.requested_by = request.user
             dataset_request.save()
-            messages.success(request, f"Permintaan dataset untuk proyek '{project.name}' berhasil dikirim!")
-            return redirect('projek:dataset_request_list') # Arahkan ke daftar permintaan
+
+            messages.success(request, f"Permintaan dataset untuk proyek '{project.name}' berhasil disimpan!")
+
+            return redirect('projek:dataset_request_list') # Arahkan ke daftar permintaan dataset
         else:
-            messages.error(request, "Terjadi kesalahan saat mengirim permintaan dataset. Silakan periksa isian Anda.")
+            messages.error(request, "Terjadi kesalahan saat menyimpan permintaan dataset. Silakan periksa isian Anda.")
     else:
-        # Anda bisa mengisi awal deskripsi masalah dataset dari deskripsi proyek
         initial_data = {
             'description_problem': f"Dataset dibutuhkan untuk analisis atau pengembangan AI terkait proyek: '{project.name}'. ({project.description})",
-            'start_date_needed': project.start_date, # Bisa mengambil tanggal mulai proyek
+            'start_date_needed': project.start_date,
         }
         form = DatasetRequestForm(initial=initial_data)
 
@@ -443,9 +476,6 @@ def create_dataset_request_view(request, project_id):
 
 @login_required
 def dataset_request_list_view(request):
-    """
-    Menampilkan daftar semua permintaan dataset.
-    """
     dataset_requests = DatasetRequest.objects.all().order_by('-created_at')
     context = {
         'dataset_requests': dataset_requests,
@@ -461,10 +491,8 @@ def delete_request_dataset(request, request_id):
     if request.method == 'POST':
         dataset_request_obj.delete()
         messages.success(request, f"Permintaan dataset untuk proyek '{project_name}' berhasil dihapus.")
-        # UBAH INI: Nama URL yang benar adalah 'dataset_request_list'
         return redirect('projek:dataset_request_list')
     else:
-        # Untuk permintaan GET, tampilkan halaman konfirmasi
         context = {
             'dataset_request': dataset_request_obj, # Kirim objek dataset_request ke template
             'page_title': f"Hapus Permintaan Dataset: {project_name}"
@@ -472,58 +500,91 @@ def delete_request_dataset(request, request_id):
         return render(request, 'request_dataset/confirm_delete_request_dataset.html', context)
 
 
-#--data request APIS
-def get_request_data_api(request, projek_id):
-    try:
-        projek = DatasetRequest.objects.get(pk=projek_id)
-        data = {
-            'deskripsi_problem': projek.deskripsi_problem,
-            'target_for_dataset': projek.target_for_dataset,
-            'type_data_needed': projek.type_data_needed,
-            'num_features': projek.num_features,
-            'dataset_size': projek.dataset_size,
-            'file_format': projek.file_format,
-            'status': projek.status,
-            'requested_by': projek.requested_by,
-
-            
-            'start_date_needed': projek.start_date_needed.strftime('%Y-%m-%d') if projek.start_date_needed else '',
-            'end_date_needed': projek.end_date_needed.strftime('%Y-%m-%d') if projek.end_date_needed else '',
-        }
-        return JsonResponse(data)
-    except DatasetRequest.DoesNotExist:
-        return JsonResponse({'error': 'Data entry not found'}, status=404)
 
 
 @login_required
 def datasets(request):
-    api_url = "https://undirty.pythonanywhere.com/api/receive-message/"
-    dataset_data = [] # Inisialisasi list kosong untuk data dataset
+    api_url = "https://undirty.pythonanywhere.com/api/dataset-reply/" # URL API terbaru
+    saved_count = 0
+    skipped_count = 0
 
     try:
-        # Melakukan permintaan HTTP GET ke API
-        response = requests.get(api_url)
-        response.raise_for_status() # Akan memunculkan HTTPError untuk respons status kode yang buruk (4xx atau 5xx)
+        response = requests.get(api_url, timeout=10) # Tambahkan timeout
+        response.raise_for_status()
+        external_dataset_replies = response.json()
 
-        # Memparsing respons JSON
-        # Asumsikan API mengembalikan list of dictionaries
-        dataset_data = response.json()
+        if not isinstance(external_dataset_replies, list):
+            logger.warning("[Dataset Sync] External Dataset API did not return a list. Assuming single object and wrapping in a list.")
+            external_dataset_replies = [external_dataset_replies]
+
+        logger.info(f"[Dataset Sync] Received {len(external_dataset_replies)} dataset replies from external API.")
+
+        for item in external_dataset_replies:
+            project_name_from_api = item.get('project_name')
+            message_text_from_api = item.get('message_text')
+            link_text_from_api = item.get('dataset_link')
+            created_at_str_from_api = item.get('created_at')
+
+            if not project_name_from_api or not message_text_from_api:
+                logger.warning(f"[Dataset Sync] Skipping DatasetReply: Missing 'project_name' or 'message_text'. Data: {item}")
+                skipped_count += 1
+                messages.warning(request, "Beberapa balasan dataset dilewati karena data tidak lengkap.")
+                continue
+
+            try:
+                project_obj = Project.objects.get(name=project_name_from_api)
+                created_at_dt = None
+                if created_at_str_from_api:
+                    try:
+                        created_at_dt = datetime.fromisoformat(created_at_str_from_api.replace('Z', '+00:00'))
+                    except ValueError:
+                        logger.warning(f"[Dataset Sync] Invalid 'created_at' format from API for project '{project_name_from_api}': {created_at_str_from_api}. Using current time.")
+
+                dataset_reply_obj, created = DatasetReply.objects.update_or_create(
+                    project=project_obj,
+                    message=message_text_from_api, # Menggunakan message sebagai kunci unik sederhana. Pertimbangkan external_reply_id jika ada untuk keunikan lebih baik.
+                    defaults={
+                        'created_at': created_at_dt if created_at_dt else datetime.now(),
+                        'dataset_link': link_text_from_api, # Menyimpan link ke field model
+                    }
+                )
+                if created:
+                    logger.info(f"[Dataset Sync] New DatasetReply created for project '{project_name_from_api}'.")
+                else:
+                    logger.info(f"[Dataset Sync] DatasetReply updated for project '{project_name_from_api}'.")
+                saved_count += 1
+            except Project.DoesNotExist:
+                logger.warning(f"[Dataset Sync] Project '{project_name_from_api}' not found in local DB for this DatasetReply. Skipped.")
+                messages.warning(request, f"Balasan dataset untuk proyek '{project_name_from_api}' tidak dapat disimpan karena proyek tidak ditemukan secara lokal. Silakan sinkronkan proyek terlebih dahulu.")
+                skipped_count += 1
+            except Exception as e:
+                logger.error(f"[Dataset Sync] Unexpected error saving DatasetReply for project '{project_name_from_api}': {e}", exc_info=True)
+                messages.error(request, f"Gagal menyimpan balasan dataset untuk proyek '{project_name_from_api}': {e}")
+                skipped_count += 1
+
+        if saved_count > 0:
+            messages.success(request, f"Berhasil menyimpan/memperbarui {saved_count} balasan dataset.")
+        if skipped_count > 0:
+            messages.info(request, f"Sebanyak {skipped_count} balasan dataset dilewati.")
 
     except requests.exceptions.RequestException as e:
-        # Menangani kesalahan jika permintaan API gagal
-        print(f"Error saat mengambil data dari API: {e}")
-        # Anda bisa menambahkan pesan error ke context untuk ditampilkan di template
-        # context['error_message'] = "Gagal memuat data dataset. Silakan coba lagi nanti."
+        logger.error(f"[Dataset Sync] Error fetching data from API: {e}", exc_info=True)
+        messages.error(request, f"Gagal memuat data dataset dari API eksternal: Kesalahan koneksi atau respons tidak valid.")
     except ValueError as e:
-        # Menangani kesalahan jika respons bukan JSON yang valid
-        print(f"Error parsing JSON dari API: {e}")
-        # context['error_message'] = "Respons API tidak valid."
+        logger.error(f"[Dataset Sync] Error parsing JSON from API: {e}", exc_info=True)
+        messages.error(request, f"Respons API eksternal tidak valid (bukan JSON): {e}")
+    except Exception as e:
+        logger.error(f"[Dataset Sync] An unexpected error occurred in datasets function: {e}", exc_info=True)
+        messages.error(request, f"Terjadi kesalahan tak terduga saat memproses dataset: {e}")
+
+    final_dataset_replies_for_template = DatasetReply.objects.all().order_by('-created_at')
 
     context = {
-        'page_title': "Daftar Datasets",
-        'datasets': dataset_data, # Mengirimkan data dataset ke template
+        'page_title': "Daftar Balasan Dataset",
+        'dataset_replies': final_dataset_replies_for_template, # Mengirimkan objek DatasetReply ke template
     }
-    return render(request, 'datasets/list_dataset.html', context)
+    return render(request, 'datasets/list_dataset.html', context) # Nama template mungkin perlu disesuaikan
+
 
 #------- INTELLIGENCE ENGINEERING ----------
 @login_required
@@ -535,73 +596,6 @@ def select_project_for_intelligence_engineering_view(request):
         'page_title': 'Pilih Proyek untuk Rekayasa Kecerdasan'
     }
     return render(request, 'intelligence_engineering/select_project_ie.html', context)
-
-@login_required
-def create_intelligence_engineering_view(request, project_id):
-    project = get_object_or_404(Project, id=project_id)
-    # Periksa apakah proyek ini sudah memiliki Intelligence Engineering
-    if hasattr(project, 'intelligence_engineering') and project.intelligence_engineering:
-        messages.warning(request, f"Proyek '{project.name}' sudah memiliki entri Rekayasa Kecerdasan. Silakan edit jika perlu.")
-        return redirect('projek:edit_intelligence_engineering', project_id=project.id)
-
-    if request.method == 'POST':
-        form = IntelligenceEngineeringForm(request.POST)
-        if form.is_valid():
-            ie_instance = form.save(commit=False)
-            ie_instance.project = project
-            ie_instance.save()
-            messages.success(request, f"Rekayasa Kecerdasan untuk proyek '{project.name}' berhasil disimpan!")
-            return redirect('projek:intelligence_engineering_list')
-        else:
-            messages.error(request, "Terjadi kesalahan saat menyimpan Rekayasa Kecerdasan. Silakan periksa isian Anda.")
-    else:
-        # Anda bisa mengisi awal beberapa field berdasarkan proyek atau Problem Framing
-        initial_data = {
-            'project': project.id, # Set nilai awal untuk project FK
-            # 'organization_objective': project.description, # Contoh pre-fill
-            # ...
-        }
-        form = IntelligenceEngineeringForm(initial=initial_data)
-
-    context = {
-        'form': form,
-        'project': project,
-        'page_title': f"Buat Rekayasa Kecerdasan untuk Proyek: {project.name}"
-    }
-    return render(request, 'intelligence_engineering/create_intelligence_engineering.html', context)
-
-@login_required
-def intelligence_engineering_list_view(request):
-    intelligence_engineerings = IntelligenceEngineering.objects.all().order_by('-created_at')
-    context = {
-        'intelligence_engineerings': intelligence_engineerings,
-        'page_title': 'Daftar Rekayasa Kecerdasan'
-    }
-    return render(request, 'intelligence_engineering/intelligence_engineering_list.html', context)
-
-@login_required
-def edit_intelligence_engineering_view(request, project_id):
-    project = get_object_or_404(Project, id=project_id)
-    ie_instance = get_object_or_404(IntelligenceEngineering, project=project)
-
-    if request.method == 'POST':
-        form = IntelligenceEngineeringForm(request.POST, instance=ie_instance)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f"Rekayasa Kecerdasan untuk proyek '{project.name}' berhasil diperbarui!")
-            return redirect('projek:intelligence_engineering_list')
-        else:
-            messages.error(request, "Terjadi kesalahan saat memperbarui Rekayasa Kecerdasan.")
-    else:
-        form = IntelligenceEngineeringForm(instance=ie_instance)
-
-    context = {
-        'form': form,
-        'project': project,
-        'page_title': f"Edit Rekayasa Kecerdasan: {project.name}"
-    }
-    return render(request, 'intelligence_engineering/create_intelligence_engineering.html', context)
-
 
 #---DATA PROCESSINGG-----
 @login_required
@@ -622,19 +616,13 @@ def create_data_processing_view(request, project_id):
         if form.is_valid():
             data_processing = form.save(commit=False)
             data_processing.project = project
-            # REMOVE THIS LINE: 'processed_by' no longer exists in DataProcessing model
-            # data_processing.processed_by = request.user
             data_processing.save()
             messages.success(request, f"Entri Pemrosesan & Pelatihan Data untuk proyek '{project.name}' berhasil dibuat!")
             return redirect('projek:data_processing_list_view')
         else:
-            # --- DEBUGGING: Print form errors to your console ---
             print("Form errors:", form.errors)
-            # --- END DEBUGGING ---
             messages.error(request, "Terjadi kesalahan saat membuat entri Pemrosesan & Pelatihan Data. Silakan periksa isian Anda.")
     else:
-        # For GET requests, initialize the form with the project instance
-        # This populates the hidden 'project' field correctly.
         form = DataProcessingForm(initial={'project': project})
 
     context = {
@@ -679,7 +667,7 @@ def edit_data_processing_view(request, pk):
 def delete_processing_data(request, pk):
     # First, get the DataProcessing object using the PK from the URL
     data_processing = get_object_or_404(DataProcessing, pk=pk)
-    
+
     # Then, get the associated project from the data_processing object
     project = data_processing.project # <-- CORRECTED LINE HERE!
 
@@ -694,7 +682,7 @@ def delete_processing_data(request, pk):
             'data_processing': data_processing,
             'page_title': f"Hapus Data Processing: {project.name}"
         }
-        return render(request, 'data_processing/confirm_delete_data_processing.html', context)    
+        return render(request, 'data_processing/confirm_delete_data_processing.html', context)
 
 @login_required
 def data_processing_detail_view(request, pk):
@@ -721,7 +709,7 @@ def create_training_model_view(request, pk):
     project = get_object_or_404(Project, id=pk)
 
     if request.method == 'POST':
-        form = TrainingModelForm(request.POST, project_instance=project)
+        form = TrainingModelForm(request.POST, request.FILES, project_instance=project)
         if form.is_valid():
             training_model = form.save(commit=False)
             training_model.project = project
@@ -730,7 +718,7 @@ def create_training_model_view(request, pk):
             messages.success(request, f"Entri Pelatihan Model untuk proyek '{project.name}' berhasil dibuat!")
             return redirect('projek:model_training_list') # Pastikan nama URL sesuai di urls.py
         else:
-            print("Form errors:", form.errors) 
+            print("Form errors:", form.errors)
             messages.error(request, "Terjadi kesalahan saat membuat entri Pelatihan Model. Silakan periksa isian Anda.")
     else:
         form = TrainingModelForm(project_instance=project)
@@ -755,7 +743,7 @@ def training_model_list_view(request):
 def edit_training_model_view(request, pk):
     training_model = get_object_or_404(TrainingModel, pk=pk)
     if request.method == 'POST':
-        form = TrainingModelForm(request.POST, instance=training_model)
+        form = TrainingModelForm(request.POST, request.FILES, instance=training_model)
         if form.is_valid():
             form.save()
             messages.success(request, f"Entri Pelatihan Model untuk proyek '{training_model.project.name}' berhasil diperbarui!")
@@ -784,7 +772,7 @@ def training_model_detail_view(request, pk):
 @login_required
 def delete_training_model(request, pk):
     project = get_object_or_404(Project, id=pk)
-    training_model = get_object_or_404(TrainingModel, pk=pk) 
+    training_model = get_object_or_404(TrainingModel, pk=pk)
 
     if request.method == 'POST':
         training_model.delete()
@@ -799,13 +787,139 @@ def delete_training_model(request, pk):
         }
         return render(request, 'model_training/confirm_delete_training_model.html', context)
 
+# --- api content ---
+@login_required
+def api_content_settings_view(request):
+    """
+    Menampilkan daftar API yang tersedia, membedakan antara internal dan eksternal.
+    """
+    api_list = [
+        # --- Internal APIs ---
+        {
+            'name': 'Project API',
+            'description': 'Mengelola informasi dasar proyek, termasuk nama, deskripsi, lokasi, dan status.',
+            'models': 'Project',
+            'endpoints': {
+                'ListCreate': '/api-content/projects/', # Endpoint List/Create
+            },
+            'is_external': False # Flag untuk API internal
+        },
+        {
+            'name': 'Problem Framing API',
+            'description': 'Mengelola definisi masalah dan tujuan proyek untuk solusi AI, termasuk konteks data dan fitur kunci.',
+            'models': 'ProblemFraming',
+            'endpoints': {
+                'ListCreate': '/api-content/problem-framings/', # Endpoint List/Create
+            },
+            'is_external': False
+        },
+        {
+            'name': 'Dataset Request API',
+            'description': 'Mengelola permintaan dataset dari proyek, termasuk deskripsi kebutuhan data, format, dan estimasi ukuran.',
+            'models': 'DatasetRequest',
+            'endpoints': {
+                'ListCreate': '/api-content/dataset-requests/', # Endpoint List/Create
+            },
+            'is_external': False
+        },
+        {
+            'name': 'Data Processing API',
+            'description': 'Menyimpan detail aktivitas pemrosesan data, sumber data, langkah-langkah pembersihan, dan rekayasa fitur.',
+            'models': 'DataProcessing',
+            'endpoints': {
+                'ListCreate': '/api-content/data-processings/', # Endpoint List/Create
+            },
+            'is_external': False
+        },
+        {
+            'name': 'Training Model API',
+            'description': 'Mengelola informasi model AI yang dilatih, termasuk tipe model, algoritma, performa, dan strategi penyempurnaan.',
+            'models': 'TrainingModel',
+            'endpoints': {
+                'ListCreate': '/api-content/training-models/', # Endpoint List/Create
+            },
+            'is_external': False
+        },
+        {
+            'name': 'Sent Project IC Status API',
+            'description': 'Menyediakan daftar proyek dengan ID, nama, dan statusnya. Dirancang untuk konsumsi oleh sistem manajemen proyek eksternal.',
+            'models': 'Project',
+            'endpoints': {
+                'List': '/api-content/project-statuses/', # Ini adalah API internal yang Anda sediakan (hanya List)
+            },
+            'is_external': False
+        },
+        # --- External APIs ---
+        {
+            'name': 'Project Management (External) API', # Menggunakan nama yang lebih jelas
+            'description': 'API ini dikonsumsi dari sistem manajemen proyek eksternal, menyediakan data proyek yang disinkronkan ke dalam sistem ini.',
+            'models': 'Projects (External)',
+            'endpoints': {
+                'List': settings.EXTERNAL_PROJECT_MENEJ_API_URL, # Menggunakan URL langsung dari settings
+            },
+            'is_external': True # Flag untuk API eksternal
+        },
+        {
+            'name': 'Intelligence Engineering (External) API',
+            'description': 'API ini dikonsumsi dari sistem eksternal (tim rekayasa kecerdasan), menyediakan data detail rekayasa kecerdasan. Data disinkronkan ke dalam sistem ini.',
+            'models': 'IntelligenceEngineering (External)',
+            'endpoints': {
+                'List': settings.EXTERNAL_PROJECT_ENGINEER_API_URL,
+            },
+            'is_external': True # Flag untuk API eksternal
+        },
+    ]
 
-
-
+    context = {
+        'page_title': 'Pengaturan Konten API',
+        'api_list': api_list,
+    }
+    return render(request, 'api-content/api-list.html', context)
 
 #---DOCUMENTATIONS-----
+
+@login_required
 def documentations(request):
-    return render(request, 'documentations/documentation.html')
+    projects = Project.objects.all().order_by('name')
+    context = {
+        'projects': projects,
+        'page_title': 'Pilih Proyek untuk Dokumentasi Lengkap'
+    }
+    return render(request, 'documentations/documentation.html', context)
+
+
+@login_required
+def generate_project_documentation_view(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+
+    problem_framing = None
+    try:
+        problem_framing = project.problem_framing
+    except ProblemFraming.DoesNotExist:
+        messages.info(request, "Tidak ada Problem Framing ditemukan untuk proyek ini.")
+
+    data_processings = DataProcessing.objects.filter(project=project).order_by('-created_at')
+    training_models = TrainingModel.objects.filter(project=project).order_by('-training_date')
+    dataset_replies = DatasetReply.objects.filter(project=project).order_by('-created_at')
+    documents = Document.objects.filter(project=project).order_by('-created_at')
+
+    intelligence_engineering = None
+    try:
+        intelligence_engineering = project.intelligence_engineering
+    except IntelligenceEngineering.DoesNotExist:
+        messages.info(request, "Tidak ada Intelligence Engineering ditemukan untuk proyek ini.")
+
+    context = {
+        'page_title': f"Dokumentasi Proyek: {project.name}",
+        'project': project,
+        'problem_framing': problem_framing,
+        'data_processings': data_processings,
+        'training_models': training_models,
+        'dataset_replies': dataset_replies,
+        'documents': documents,
+        'intelligence_engineering': intelligence_engineering,
+    }
+    return render(request, 'documentations/project_documentation.html', context)
 
 
 #--api intelligence-creations--

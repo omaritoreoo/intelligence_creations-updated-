@@ -5,17 +5,21 @@
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{# Font Awesome untuk ikon #}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
-<div class="list-container"> 
+<div class="dashboard-content-wrapper">
     <div class="dashboard-header">
         <h2 class="dashboard-title">{{ page_title }}</h2>
+        <div class="actions">
+            <a href="{% url 'projek:select_project_for_training_model' %}" class="btn btn-success btn-sm" title="Buat Model Training Baru">
+                <i class="fas fa-plus-circle"></i> Model Training Baru
+            </a>
+        </div>
     </div>
 
     <div class="dashboard-panel">
-
         <h3 class="panel-title">Daftar Model Training</h3>
-        
-        <a href="{% url 'projek:select_project_for_training_model' %}" class="btn btn-success mt-3">Model Training Baru</a>
 
         {% if training_models %}
         <div class="table-responsive">
@@ -28,58 +32,95 @@
                         <th>Tipe Model</th>
                         <th>Algoritma</th>
                         <th>Data Latih</th>
-                        <th>Performa Model</th>
+                        <th>Performa Model (Awal)</th>
+                        <th>Performa (Refined)</th> {# Kolom baru untuk performa refined #}
                         <th>Strategi Refining</th>
                         <th>Status Refining</th>
                         <th>Dilatih Oleh</th>
                         <th>Tanggal Pelatihan</th>
                         <th>File Model</th>
-                        <th>Tanggal Dibuat</th>
-                        <th>Terakhir Update</th>
-                        <th class="text-center">Aksi</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for tm in training_models %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td>{{ tm.project.name }}</td>
+                        <td>
+                            {% if tm.project %}
+                                <a href="{% url 'projek:view_project' tm.project.id %}" title="Lihat Detail Proyek">
+                                    {{ tm.project.name|truncatechars:20 }}
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
                         <td>{{ tm.model_name|truncatechars:30 }}</td>
-                        <td>{{ tm.model_type|capfirst }}</td>
-                        <td>{{ tm.algorithm_used|default:"N/A"|truncatechars:20 }}</td>
-                        <td>{{ tm.training_data_used.project.name|default:"Data Tidak Tersedia" }} - {{ tm.training_data_used.created_at|date:"d M Y" }}</td>
+                        <td>{{ tm.get_model_type_display|capfirst }}</td>
+                        <td>{{ tm.algorithm_used|default:"-"|truncatechars:20 }}</td>
+                        <td>
+                            {% if tm.training_data_used %}
+                                <a href="{% url 'projek:view_data_processing_view' tm.training_data_used.pk %}" title="Lihat Detail Pemrosesan Data">
+                                    {{ tm.training_data_used.project.name|default:"N/A" }} ({{ tm.training_data_used.created_at|date:"d M Y" }})
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
                         <td>
                             {% if tm.model_performance %}
-                                Akurasi: **{{ tm.model_performance.accuracy|default:'N/A' }}**
-                                {% if tm.model_performance.f1_score %}<br>F1-Score: {{ tm.model_performance.f1_score }}{% endif %}
-                                {% if tm.refined_performance %}
-                                    <br>Refined Acc: **{{ tm.refined_performance.accuracy|default:'N/A' }}**
-                                {% endif %}
+                                {% for key, value in tm.model_performance.items %}
+                                    <small><strong>{{ key|title }}:</strong> {{ value|floatformat:4 }}</small>{% if not forloop.last %}<br>{% endif %}
+                                {% endfor %}
                             {% else %}
-                                N/A
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if tm.refined_performance %}
+                                {% for key, value in tm.refined_performance.items %}
+                                    <small><strong>{{ key|title }}:</strong> {{ value|floatformat:4 }}</small>{% if not forloop.last %}<br>{% endif %}
+                                {% endfor %}
+                            {% else %}
+                                -
                             {% endif %}
                         </td>
                         <td>{{ tm.refining_strategy|default:"-"|truncatechars:30 }}</td>
-                        <td>{{ tm.get_refining_status_display }}</td>
-                        <td>{{ tm.trained_by.username|default:"N/A" }}</td>
+                        <td>
+                            {# Perbaikan: Menggunakan kelas CSS yang sesuai dengan definisi di dashboard.css #}
+                            <span class="status-badge status-{% if tm.refining_status == 'in_progress' %}ongoing{% elif tm.refining_status == 'completed' %}completed{% elif tm.refining_status == 'failed' %}cancelled{% elif tm.refining_status == 'not_needed' %}secondary{% else %}draft{% endif %}">
+                                {{ tm.get_refining_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ tm.trained_by.get_full_name|default:tm.trained_by.username|default:"N/A" }}</td>
                         <td>{{ tm.training_date|date:"d M Y H:i" }}</td>
                         <td>
                             {% if tm.model_path %}
-                                {# >>> UBAH BARIS INI <<< #}
-                                <a href="{{ tm.model_path.url }}" target="_blank" download="{{ tm.model_file_name }}" class="btn btn-sm btn-link">Download Model ({{ tm.model_file_name }})</a>
-                                {# >>> AKHIR UBAHAN <<< #}
+                                <a href="{{ tm.model_path.url }}" target="_blank" download="{{ tm.model_file_name }}" class="btn btn-sm btn-outline-primary" title="Download Model">
+                                    <i class="fas fa-download"></i>
+                                </a>
                             {% else %}
                                 Belum diunggah
                             {% endif %}
                         </td>
-                        <td>{{ tm.created_at|date:"d M Y H:i" }}</td>
-                        <td>{{ tm.updated_at|date:"d M Y H:i" }}</td>
-
                         <td class="actions text-center">
-                            <a href="{% url 'projek:edit_training_model' tm.pk %}" class="btn btn-sm btn-info">Edit</a>
-                            <a href="{% url 'projek:delete_training_model' tm.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus model training ini?');">Hapus</a>
-                            <a href="{% url 'projek:view_training_model' tm.pk %}" class="btn btn-sm btn-secondary">View</a> 
+                            <a href="{% url 'projek:view_training_model' tm.pk %}" class="btn btn-sm btn-info" title="Lihat Detail">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'projek:edit_training_model' tm.pk %}" class="btn btn-sm btn-warning" title="Edit Model">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="{% url 'projek:delete_training_model' tm.pk %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger" title="Hapus Model" onclick="return confirm('Apakah Anda yakin ingin menghapus model training ini?');">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
                         </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="14" class="text-center">Belum ada entri Training Models. Klik tombol "Model Training Baru" untuk memulai.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

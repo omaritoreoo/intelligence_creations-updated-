@@ -1,18 +1,42 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
 {% load static %}
 
-
-
+{% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css'%}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
 <div class="dashboard-content-wrapper">
     <div class="dashboard-header">
-        <img src="https://cdn-icons-png.flaticon.com/512/2920/2920277.png" alt="Logo Dashboard" style="height: 40px; margin-right: 15px;">
-        <h2 class="dashboard-title">Documentations</h2>
+        <h2 class="dashboard-title">{{ page_title }}</h2>
     </div>
 
+    <div class="dashboard-panel">
+        <h3 class="panel-title">Pilih Proyek</h3>
+        <p>Silakan pilih proyek dari daftar di bawah untuk membuat dokumentasi lengkapnya.</p>
+
+        {% if projects %}
+            <div class="list-group">
+                {% for project in projects %}
+                    <a href="{% url 'projek:generate_project_documentation' project.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ project.name }}</strong>
+                            <br><small>{{ project.description|truncatechars:70 }}</small>
+                        </div>
+
+                        <span class="status-badge status-{% if project.status == 'Ongoing' %}ongoing {% elif project.status == 'Done' %}completed{% elif project.status == 'Stop' %}cancelled{% elif project.status == 'not_needed' %}secondary{% else %}draft{% endif %}">
+                            {{ project.status }}
+                        </span>
+
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle"></i> Belum ada proyek yang tersedia untuk didokumentasikan.
+            </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

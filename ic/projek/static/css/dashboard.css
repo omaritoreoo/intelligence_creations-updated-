@@ -83,6 +83,8 @@ body::before {
     text-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
+
+
 /* Create Button */
 .create-button {
     background-color: #28a745;
@@ -163,6 +165,42 @@ body::before {
     position: relative;
     z-index: 2;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Style untuk area visualisasi grafik agar memiliki tinggi yang terkontrol */
+.dashboard-panel.visualization-area,
+.dashboard-panel.comparison-area {
+    /* Pastikan tinggi terkontrol */
+    min-height: 350px; /* Minimal tinggi panel */
+    display: flex;
+    flex-direction: column; /* Atur item di dalam panel secara kolom */
+    justify-content: space-between; /* Untuk mendorong grafik ke tengah atau bawah jika ada elemen lain */
+}
+
+/* Style untuk elemen canvas Chart.js */
+.dashboard-panel canvas {
+    max-height: 280px; /* Atur tinggi maksimal untuk canvas grafik */
+    width: 100% !important; /* Pastikan lebar 100% dari container */
+    height: auto !important; /* Biarkan tinggi menyesuaikan proporsi, tapi dibatasi oleh max-height */
+    /* Opsional: Tambahkan padding jika Anda ingin ada jarak dari tepi panel */
+    padding: 10px;
+    box-sizing: border-box; /* Pastikan padding tidak menambah ukuran total */
+}
+
+/* Jika Anda ingin placeholder tetap terlihat seperti sebelumnya saat tidak ada grafik */
+#training-chart-container,
+#comparison-chart-container {
+    height: 300px; /* Tinggi spesifik untuk placeholder */
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    border: 1px dashed #ced4da;
+    font-style: italic;
+    font-size: 0.9rem;
+    margin-top: 15px; /* Memberi sedikit jarak dari deskripsi */
 }
 
 /* --- Table Styling (for .intelligence-entry tables) --- */

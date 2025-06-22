@@ -75,30 +75,26 @@ class ProjectForm(forms.ModelForm):
 class IntelligenceEngineeringForm(forms.ModelForm):
     class Meta:
         model = IntelligenceEngineering
-        fields = '__all__'
-        widgets = {
-            # Pastikan nama field di sini sesuai dengan nama field di model IntelligenceEngineering Anda.
-            # Berdasarkan model yang Anda berikan sebelumnya, field-nya adalah:
-            'mo_organizational': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'mo_leading_indicators': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'mo_user_outcomes': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'mo_model_properties': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'ie_automate': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'ie_prompt': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'ie_annotate': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'ie_organization': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'ie_system_objectives': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'ie_minimize_flaws': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'ie_create_data': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'ii_business_process': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'ii_technology': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'ii_build_process': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'bd_limitation': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'sr_realization': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'pr_deployment': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'pr_maintenance': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
-            'pr_operating': forms.Textarea(attrs={'rows': 4, 'cols': 80}),
+        fields = [
+            'mo_organizational',
+            'mo_leading_indicators',
+            'mo_user_outcomes',
+            'mo_model_properties',
+        ]
+
+        labels = {
+            'mo_organizational': 'Tujuan Organisasional',
+            'mo_leading_indicators': 'Indikator Utama',
+            'mo_user_outcomes': 'Hasil Pengguna',
+            'mo_model_properties': 'Properti Model',
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.widget.attrs['readonly'] = 'readonly'
+            field.widget.attrs['disabled'] = 'disabled'
+            field.required = False
 
 
 class ProblemFramingForm(forms.ModelForm):
@@ -207,10 +203,9 @@ class TrainingModelForm(forms.ModelForm):
             'algorithm_used',
             'training_data_used',
             'model_performance',
-            'model_path', # Ini adalah FileField dari models.py
+            'model_path',
             'refining_strategy',
             'refining_status',
-            'refined_performance',
         ]
         widgets = {
             'project': forms.HiddenInput(),
@@ -219,14 +214,11 @@ class TrainingModelForm(forms.ModelForm):
             'algorithm_used': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Misal: Random Forest, Neural Network'}),
             'training_data_used': forms.Select(attrs={'class': 'form-control'}),
             'model_performance': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': '{"accuracy": 0.89, "f1_score": 0.85} (format JSON)'}),
-            
-            # --- WIDGET INI SUDAH BENAR UNTUK FileField ---
+
             'model_path': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
-            # -----------------------------------------------
-            
+
             'refining_strategy': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Jelaskan strategi untuk meningkatkan performa model (misal: Hyperparameter tuning).'}),
             'refining_status': forms.Select(attrs={'class': 'form-control'}),
-            'refined_performance': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': '{"accuracy": 0.91, "rmse": 0.5} (format JSON, jika ada refining)'}),
         }
         labels = {
             'model_name': 'Nama Model',
@@ -237,7 +229,6 @@ class TrainingModelForm(forms.ModelForm):
             'model_path': 'File Model Terlatih', # Label yang lebih sesuai
             'refining_strategy': 'Strategi Penyempurnaan',
             'refining_status': 'Status Penyempurnaan',
-            'refined_performance': 'Performa Setelah Penyempurnaan (JSON)',
         }
 
     def __init__(self, *args, **kwargs):
@@ -254,6 +245,6 @@ class TrainingModelForm(forms.ModelForm):
 
         for field_name, field in self.fields.items():
             # Pastikan 'model_path' dikecualikan dari penambahan kelas 'form-control' default
-            if field_name not in ['project', 'model_path']: 
+            if field_name not in ['project', 'model_path']:
                 if isinstance(field.widget, (forms.TextInput, forms.NumberInput, forms.Textarea, forms.Select, forms.DateInput, forms.DateTimeInput)):
                     field.widget.attrs.update({'class': 'form-control'})

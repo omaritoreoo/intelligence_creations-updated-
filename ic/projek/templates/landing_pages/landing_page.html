@@ -5,15 +5,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="{% static 'images/iccon.png' %}" type="image/png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <link rel="stylesheet" href="{% static 'css/landing_page.css'%}">
-<title>Welcome - Your Project Portal</title>
+<title>Selamat Datang di Intelligence Creations</title>
 
 </head>
 <body>
+
+<!-- Loading Overlay (NEW) -->
+<div id="loading-overlay">
+    <div class="spinner"></div>
+</div>
 
 <!-- Navigation -->
 <nav class="navbar navbar-expand-lg">
@@ -25,9 +33,9 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <div class="navbar-nav ml-auto d-flex flex-row">
                 <a class="nav-btn" href="#home">Home</a>
-                <a class="nav-btn" href="#features">Features</a>
-                <a class="nav-btn" href="#about">About</a>
-                <a class="nav-btn" href="#contact">Contact</a>
+                <a class="nav-btn" href="#flow">Alur Sistem</a>
+                <a class="nav-btn" href="#features">Fitur</a>
+                <a class="nav-btn" href="#contact">Kontak</a>
             </div>
         </div>
     </div>
@@ -38,11 +46,52 @@
     <div class="container">
         <h1 class="hero-title">Selamat Datang di Intelligence Creations</h1>
         <p class="hero-subtitle">
-            Kelola data, upload foto, dan akses dashboard dengan mudah. 
-            Platform terintegrasi untuk semua kebutuhan manajemen konten Anda.
+            Platform terintegrasi untuk mengelola siklus hidup proyek kecerdasan buatan Anda, dari ide hingga implementasi.
         </p>
         <div class="hero-buttons">
             <button class="btn btn-main" onclick="redirectToDashboard()">Masuk ke Dashboard</button>
+        </div>
+    </div>
+</section>
+
+<!-- Flow Section - Alur Singkat Intelligence Creation -->
+<section class="flow-section" id="flow">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 style="font-size: 2.5rem; font-weight: bold; color: #333;">Alur Singkat Intelligence Creation</h2>
+                <p style="font-size: 1.2rem; color: #666;">Panduan sederhana dari ide hingga model AI siap pakai.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 mb-4">
+                <div class="flow-step-card">
+                    <div class="flow-step-icon">1️⃣</div>
+                    <h3 class="flow-step-title">Inisiasi Proyek</h3>
+                    <p class="flow-step-desc">Definisikan proyek dan tujuan AI Anda, terintegrasi dengan rekayasa kecerdasan.</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="flow-step-card">
+                    <div class="flow-step-icon">2️⃣</div>
+                    <h3 class="flow-step-title">Pembingkaian Masalah</h3>
+                    <p class="flow-step-desc">Ubah ide besar menjadi masalah yang terdefinisi jelas dan terukur untuk AI.</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="flow-step-card">
+                    <div class="flow-step-icon">3️⃣</div>
+                    <h3 class="flow-step-title">Manajemen Data</h3>
+                    <p class="flow-step-desc">Kelola permintaan dataset, proses data, hingga model AI siap dilatih.</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="flow-step-card">
+                    <div class="flow-step-icon">4️⃣</div>
+                    <h3 class="flow-step-title">Pelatihan & Dokumentasi</h3>
+                    <p class="flow-step-desc">Catat proses pelatihan model dan dokumen penting di setiap tahapan.</p>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -52,62 +101,72 @@
     <div class="container">
         <div class="row text-center mb-5">
             <div class="col-12">
-                <h2 style="font-size: 2.5rem; font-weight: bold; color: #333;">Fitur Unggulan</h2>
-                <p style="font-size: 1.2rem; color: #666;">Semua yang Anda butuhkan dalam satu platform</p>
+                <h2 style="font-size: 2.5rem; font-weight: bold; color: #333;">Fitur Utama</h2>
+                <p style="font-size: 1.2rem; color: #666;">Mempermudah setiap langkah dalam pengembangan AI Anda.</p>
             </div>
         </div>
         <div class="row">
             <div class="col-md-4 mb-4">
                 <div class="feature-card">
-                    <div class="feature-icon">🏠</div>
-                    <h3 class="feature-title">Dashboard Lengkap</h3>
-                    <p class="feature-desc">Monitor semua aktivitas dan data dalam satu tampilan yang informatif dan mudah dipahami.</p>
+                    <div class="feature-icon"><i class="fas fa-project-diagram"></i></div>
+                    <h3 class="feature-title">Manajemen Proyek AI</h3>
+                    <p class="feature-desc">Lacak setiap proyek AI dari awal hingga akhir dengan detail lengkap.</p>
                 </div>
             </div>
             <div class="col-md-4 mb-4">
                 <div class="feature-card">
-                    <div class="feature-icon">📋</div>
-                    <h3 class="feature-title">Data Entry</h3>
-                    <p class="feature-desc">Kelola master data dan konten dengan sistem entry yang terstruktur dan user-friendly.</p>
+                    <div class="feature-icon"><i class="fas fa-brain"></i></div>
+                    <h3 class="feature-title">Rekayasa Kecerdasan</h3>
+                    <p class="feature-desc">Integrasi definisi tujuan dan strategi intelijen buatan secara mendalam.</p>
                 </div>
             </div>
             <div class="col-md-4 mb-4">
                 <div class="feature-card">
-                    <div class="feature-icon">📷</div>
-                    <h3 class="feature-title">Upload Photo</h3>
-                    <p class="feature-desc">Upload dan kelola koleksi foto dengan sistem yang aman dan terorganisir dengan baik.</p>
+                    <div class="feature-icon"><i class="fas fa-question-circle"></i></div>
+                    <h3 class="feature-title">Pembingkaian Masalah</h3>
+                    <p class="feature-desc">Formulasikan masalah bisnis menjadi pertanyaan AI yang terstruktur.</p>
                 </div>
             </div>
-        </div>
-    </div>
-</section>
-
-<!-- Stats Section -->
-<section class="stats-section">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-3 col-6">
-                <div class="stat-item">
-                    <div class="stat-number">500+</div>
-                    <div class="stat-label">Pengguna Aktif</div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-database"></i></div>
+                    <h3 class="feature-title">Permintaan & Balasan Dataset</h3>
+                    <p class="feature-desc">Minta dataset dan kelola balasan data yang masuk dari sumber eksternal.</p>
                 </div>
             </div>
-            <div class="col-md-3 col-6">
-                <div class="stat-item">
-                    <div class="stat-number">1000+</div>
-                    <div class="stat-label">Data Terkelola</div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-cogs"></i></div>
+                    <h3 class="feature-title">Pemrosesan Data</h3>
+                    <p class="feature-desc">Dokumentasikan langkah-langkah pembersihan, transformasi, dan rekayasa fitur data Anda.</p>
                 </div>
             </div>
-            <div class="col-md-3 col-6">
-                <div class="stat-item">
-                    <div class="stat-number">5000+</div>
-                    <div class="stat-label">Foto Tersimpan</div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-robot"></i></div>
+                    <h3 class="feature-title">Pelatihan Model AI</h3>
+                    <p class="feature-desc">Catat detail pelatihan model, algoritma yang digunakan, hingga performa model.</p>
                 </div>
             </div>
-            <div class="col-md-3 col-6">
-                <div class="stat-item">
-                    <div class="stat-number">99%</div>
-                    <div class="stat-label">Uptime</div>
+             <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-file-alt"></i></div>
+                    <h3 class="feature-title">Manajemen Dokumen</h3>
+                    <p class="feature-desc">Simpan dan atur semua dokumentasi proyek di satu tempat yang aman.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
+                    <h3 class="feature-title">Dashboard & Statistik</h3>
+                    <p class="feature-desc">Visualisasikan progres proyek dan metrik penting melalui dashboard interaktif.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-sync-alt"></i></div>
+                    <h3 class="feature-title">Sinkronisasi Data Eksternal</h3>
+                    <p class="feature-desc">Integrasi dan sinkronisasi data proyek dari sistem eksternal secara otomatis.</p>
                 </div>
             </div>
         </div>
@@ -117,8 +176,8 @@
 <!-- CTA Section -->
 <section class="cta-section" id="about">
     <div class="container">
-        <h2 class="cta-title">Siap untuk Memulai?</h2>
-        <p class="cta-subtitle">Bergabunglah dengan ribuan pengguna yang telah merasakan kemudahan platform kami</p>
+        <h2 class="cta-title">Siap untuk Mengelola Proyek AI Anda Lebih Baik?</h2>
+        <p class="cta-subtitle">Bergabunglah dengan Intelligence Creations dan optimalkan alur kerja Anda.</p>
         <button class="btn btn-main btn-lg" onclick="redirectToDashboard()">Mulai Sekarang</button>
     </div>
 </section>
@@ -127,10 +186,10 @@
 <footer class="footer" id="contact">
     <div class="container">
         <div class="footer-links">
-            <a href="#privacy">Privacy Policy</a>
-            <a href="#terms">Terms of Service</a>
-            <a href="#support">Support</a>
-            <a href="#contact">Contact Us</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Support</a>
+            <a href="#">Contact Us</a>
         </div>
         <p>&copy; 2024 Intelligence Creations. All rights reserved.</p>
     </div>
@@ -138,46 +197,93 @@
 
 <script>
 function redirectToDashboard() {
-    // Ganti dengan URL dashboard Anda
-        window.location.href = "{% url 'projek:login' %}";
-
+    window.location.href = "{% url 'projek:login' %}";
 }
 
-
-
-// Smooth scrolling untuk navigation links
+// Smooth scrolling for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const targetId = this.getAttribute('href');
+        const target = document.querySelector(targetId);
         if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
+            const offset = document.querySelector('nav.navbar') ? document.querySelector('nav.navbar').offsetHeight : 0;
+            const elementPosition = target.getBoundingClientRect().top + window.pageYOffset;
+            const offsetPosition = elementPosition - offset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
             });
         }
     });
 });
 
-// Animation on scroll
-window.addEventListener('scroll', function() {
-    const cards = document.querySelectorAll('.feature-card');
-    cards.forEach(card => {
-        const cardTop = card.getBoundingClientRect().top;
-        const cardVisible = 150;
-        
-        if (cardTop < window.innerHeight - cardVisible) {
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }
+// Animation on scroll for feature cards
+function animateOnScroll(selector, translateY = 30, opacity = 0, transitionTime = '0.6s') {
+    const elements = document.querySelectorAll(selector);
+    elements.forEach(el => {
+        el.style.opacity = opacity.toString();
+        el.style.transform = `translateY(${translateY}px)`;
+        el.style.transition = `all ${transitionTime} ease`;
     });
+
+    const checkVisibility = () => {
+        elements.forEach(el => {
+            const elTop = el.getBoundingClientRect().top;
+            const elVisible = 150; // Pixels from bottom of viewport to trigger
+            if (elTop < window.innerHeight - elVisible) {
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }
+        });
+    };
+
+    window.addEventListener('scroll', checkVisibility);
+    checkVisibility(); // Initial check on load
+}
+
+// Initialize animations for flow steps and feature cards
+animateOnScroll('.flow-step-card', 30, 0, '0.5s');
+animateOnScroll('.feature-card', 30, 0, '0.6s');
+
+
+// JavaScript for Loading Overlay (NEW)
+window.addEventListener('load', function() {
+    const loadingOverlay = document.getElementById('loading-overlay');
+    if (loadingOverlay) {
+        // Fade out and hide the overlay after everything is loaded
+        loadingOverlay.style.opacity = '0';
+        setTimeout(() => {
+            loadingOverlay.style.display = 'none';
+        }, 500); // Wait for the fade-out transition to complete (0.5s)
+    }
 });
 
-// Initialize card animations
-document.querySelectorAll('.feature-card').forEach(card => {
-    card.style.opacity = '0';
-    card.style.transform = 'translateY(30px)';
-    card.style.transition = 'all 0.6s ease';
+// Optional: Show loading overlay on link clicks (for full page reloads)
+document.addEventListener('DOMContentLoaded', function() {
+    const loadingOverlay = document.getElementById('loading-overlay');
+    if (loadingOverlay) {
+        const links = document.querySelectorAll('a');
+        links.forEach(link => {
+            link.addEventListener('click', function(event) {
+                // Check if the link is a full page navigation (not an anchor link)
+                if (this.href && !this.href.includes('#') && this.target !== '_blank') {
+                    loadingOverlay.style.display = 'flex';
+                    loadingOverlay.style.opacity = '1';
+                }
+            });
+        });
+
+        // For form submissions that lead to new pages
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function() {
+                loadingOverlay.style.display = 'flex';
+                loadingOverlay.style.opacity = '1';
+            });
+        });
+    }
 });
 </script>
 

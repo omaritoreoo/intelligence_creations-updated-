@@ -1,9 +1,8 @@
 # projek/viewset_api.py
 from rest_framework import viewsets, permissions
-from .models import Project, IntelligenceEngineering, ProblemFraming, DatasetRequest, DataProcessing, TrainingModel
+from .models import Project, ProblemFraming, DatasetRequest, DataProcessing, TrainingModel
 from .serializers import (
-    ProjectSerializer, IntelligenceEngineeringSerializer, ProblemFramingSerializer,
-    DatasetRequestSerializer, DataProcessingSerializer, TrainingModelSerializer
+    ProjectSerializer, ProblemFramingSerializer, DatasetRequestSerializer, DataProcessingSerializer, TrainingModelSerializer, ProjectStatusSerializer
 )
 
 
@@ -23,18 +22,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
             serializer.save()
         else:
             serializer.save(supervisor=self.request.user if self.request.data['supervisor_id'] is None else None)
-
-
-class IntelligenceEngineeringViewSet(viewsets.ModelViewSet):
-    queryset = IntelligenceEngineering.objects.all()
-    serializer_class = IntelligenceEngineeringSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-    def perform_create(self, serializer):
-        # Contoh: Jika Anda ingin proyek harus diisi saat pembuatan IntelligenceEngineering
-        if 'project' not in self.request.data:
-            raise serializer.ValidationError({"project": "Project ID is required."})
-        serializer.save()
 
 
 class ProblemFramingViewSet(viewsets.ModelViewSet):
@@ -75,3 +62,9 @@ class TrainingModelViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Contoh: Otomatis mengisi trained_by dengan user yang sedang login
         serializer.save(trained_by=self.request.user)
+
+
+class ProjectStatusViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Project.objects.all().order_by('name') # Urutkan berdasarkan nama proyek
+    serializer_class = ProjectStatusSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly] # Bisa diatur IsAuthenticated jika hanya untuk sistem internal

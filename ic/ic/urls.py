@@ -22,16 +22,17 @@ from rest_framework import routers
 
 # Impor semua ViewSet Anda dari projek.viewset_api
 from projek.viewset_api import (
-    ProjectViewSet, IntelligenceEngineeringViewSet, ProblemFramingViewSet,
-    DatasetRequestViewSet, DataProcessingViewSet, TrainingModelViewSet
+    ProjectViewSet, ProblemFramingViewSet, DatasetRequestViewSet, DataProcessingViewSet, TrainingModelViewSet, ProjectStatusViewSet
 )
 router = routers.DefaultRouter()
 router.register('projects', ProjectViewSet) # Endpoint: /api-content/projects/
-router.register('intelligence-engineerings', IntelligenceEngineeringViewSet) # Endpoint: /api-content/intelligence-engineerings/
 router.register('problem-framings', ProblemFramingViewSet) # Endpoint: /api-content/problem-framings/
 router.register('dataset-requests', DatasetRequestViewSet) # Endpoint: /api-content/dataset-requests/
 router.register('data-processings', DataProcessingViewSet) # Endpoint: /api-content/data-processings/
 router.register('training-models', TrainingModelViewSet) # Endpoint: /api-content/training-models/
+router.register('project-statuses', ProjectStatusViewSet, basename='project-status') # <-- Basename yang unik
+
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),

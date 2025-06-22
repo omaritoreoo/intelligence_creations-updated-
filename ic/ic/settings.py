@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-3-scds6(%%lf0d_w3m1b^y9^c@6ncve2-o#8q)cqy@16j%r%6l'
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False 
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 1209600  # Contoh: 2 minggu
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -46,11 +46,18 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'widget_tweaks',
+    'corsheaders',
 
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap4'
+CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+    'https://michaelbriant.pytonanywhere.com'
+    ]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -59,6 +66,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'ic.urls'
@@ -128,6 +136,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -135,7 +144,8 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media') # Ini akan membuat folder 'media' di root proyek Anda
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+DATA_MANAGEMEN_URL = 'http://undirty.pythonanywhere.com/api/receive-message/'
 EXTERNAL_PROJECT_MENEJ_API_URL = 'https://michaelbriant.pythonanywhere.com/api/proyek/'
-EXTERNAL_PROJECT_ENGINEER_API_URL = 'https://fabyaanusakti.pythonanywhere.com/api/meaningful-data/'
+EXTERNAL_PROJECT_ENGINEER_API_URL = 'https://fabyaanusakti.pythonanywhere.com/api/meaningful_objectives-only/'

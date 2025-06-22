@@ -8,6 +8,8 @@
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
 <link rel="stylesheet" href="{% static 'css/base.css'%}">
 </head>
 <body id="main-body"> {# Tambahkan ID ini #}
@@ -42,36 +44,31 @@
         <hr>
 
         <div class="navigation-area">
-            <a href="{% url 'projek:dashboard' %}">Dashboard</a>
-            <a href="{% url 'projek:problem_framing_list' %}">Problem Framing</a>
+            <a href="{% url 'projek:dashboard' %}"><i class="fas fa-fw fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{% url 'projek:problem_framing_list' %}"><i class="fas fa-fw fa-lightbulb"></i> Problem Framing</a>
 
-            
+
 
             <a href="#datasetsmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Datasets</a>
             <div class="collapse" id="datasetsmenu">
-                <a href="{% url 'projek:dataset_request_list' %}">Request Datasets</a>
-                <a href="{% url 'projek:datasets' %}"">Datasets</a>
+                <a href="{% url 'projek:dataset_request_list' %}"><i class="fas fa-fw fa-database"></i> Request Datasets</a>
+                <a href="{% url 'projek:datasets' %}">Datasets</a>
             </div>
 
             <a href="#modelTrainingsubMenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Processing</a>
             <div class="collapse" id="modelTrainingsubMenu">
-                <a href="{% url 'projek:data_processing_list_view' %}">Data Processing</a>
-                <a href="{% url 'projek:model_training_list' %}">Training Model</a>
+                <a href="{% url 'projek:data_processing_list_view' %}"><i class="fas fa-fw fa-cogs"></i> Data Processing</a>
+                <a href="{% url 'projek:model_training_list' %}"><i class="fas fa-fw fa-brain"></i> Training Model</a>
             </div>
 
-            <a href="{% url 'projek:documentations' %}">📷 Documentations</a>
+            <a href="{% url 'projek:documentations' %}"><i class="fas fa-fw fa-image"></i> Documentations</a>
         </div>
 
-        {% if user.is_authenticated %}
-        <div class="logout-area">
-            <form action="{% url 'projek:logout' %}" method="post" style="display: block; padding: 0;">
-                {% csrf_token %}
-                <button type="submit" class="logout-button">
-                    🚪 Keluar
-                </button>
-            </form>
+        <div class="sidebar-footer">
+            <a href="{% url 'projek:api_content_settings' %}"><i class="fas fa-fw fa-cogs"></i> Settings</a>
+            <a href="{% url 'projek:logout' %}"><i class="fas fa-fw fa-sign-out-alt"></i> Logout</a>
         </div>
-        {% endif %}
+
     </div>
 </div>
 
